@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>WindowsGame1</name>
+    </assembly>
+    <members>
+        <member name="M:WindowsGame1.Program.Main(System.String[])">
+             <summary>
+             The main entry point for the application.
+             </summary>
+            
+        </member>
+    </members>
+</doc>
