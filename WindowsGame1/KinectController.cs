@@ -259,7 +259,7 @@ namespace WindowsGame1
                             Joint spine = playerSkeleton.Joints[JointType.Spine];
 
                             // Store retrieved data.
-                            users[i] = new Person(leftHand.Position, rightHand.Position, shoulderCenter.Position, spine.Position);
+                            users[i] = new Person(playerSkeleton);
 
                             users[i].leftHandLocation = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(users[i].rightHandPosition, this.kinectSensor.DepthStream.Format);
                             users[i].rightHandLocation = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(users[i].leftHandPosition, this.kinectSensor.DepthStream.Format);
@@ -379,7 +379,7 @@ namespace WindowsGame1
                 TorsoData curr = new TorsoData(users[userId].torsoTop, users[userId].torsoBottom);
                 if ((curr.torsoTop.X == 0 && curr.torsoTop.Y == 0 && curr.torsoTop.Z == 0) == false)
                 {
-                    users[userId].color = ColorUtility.ComputeUserColor(curr, mostRecentFrame.Width, mostRecentColorMap, kinectSensor);
+                    users[userId].color = ColorUtility.ComputeUserColor(users[userId], mostRecentFrame.Width, mostRecentColorMap, kinectSensor);
                 }
             }
         }

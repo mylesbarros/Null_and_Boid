@@ -9,6 +9,27 @@ namespace WindowsGame1
     public class Person
     {
 
+        public Person(Skeleton skeletonData)
+        {
+            this.skeletonData = skeletonData;
+
+            // Retrieve hand data.
+            Joint rightHand = skeletonData.Joints[JointType.HandRight];
+            Joint leftHand = skeletonData.Joints[JointType.HandLeft];
+
+            // Retrieve torso data.
+            Joint shoulderCenter = skeletonData.Joints[JointType.ShoulderCenter];
+            Joint spine = skeletonData.Joints[JointType.Spine];
+
+            leftHandPosition = leftHand.Position;
+            rightHandPosition = rightHand.Position;
+
+            torsoTop = shoulderCenter.Position;
+            torsoBottom = spine.Position;
+
+            this.color = new Color();
+        }
+
         public Person(SkeletonPoint leftHand, SkeletonPoint rightHand, SkeletonPoint torsoTop, SkeletonPoint torsoBottom, Color c)
             {
                 leftHandPosition = leftHand;
@@ -120,6 +141,8 @@ namespace WindowsGame1
 
                 return output;
             }
+
+            public Skeleton skeletonData;
 
             public SkeletonPoint rightHandPosition;
             public SkeletonPoint leftHandPosition;
