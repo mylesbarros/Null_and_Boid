@@ -18,6 +18,8 @@ namespace WindowsGame1
         private const float SLIGHTLY_BRIGHTER = 1.08f;
         private const float SIGNIFICANTLY_BRIGHTER = 1.36f;
 
+        private const float SATURATION_RATIO = .2f;
+
         private const int SATURATE_CONSTANT = 50;
         /* Computes a unique color for a user based on the average color of their torso.
          * Takes a TorsoData object that defines the dimensions of the user's torso, a width that defines the width
@@ -208,7 +210,7 @@ namespace WindowsGame1
                 if (colorContrast > 125)
                 {
                     // Then we only need to brighten the color of our resulting color by a small amount
-                    userColorAverage = brightenColor(userColorAverage, SLIGHTLY_BRIGHTER);
+                   userColorAverage = brightenColor(userColorAverage, SLIGHTLY_BRIGHTER);
                 }
                 // the contrast between the user and the surrounding area is low...
                 else
@@ -217,7 +219,7 @@ namespace WindowsGame1
                     userColorAverage = brightenColor(userColorAverage, SIGNIFICANTLY_BRIGHTER);
                 }
 
-                userColorAverage = saturateColor(userColorAverage);
+                //userColorAverage = saturateColor(userColorAverage);
 
             // HSLColor hslColor = new HSLColor(colorAverage.R, colorAverage.G, colorAverage.B);
             // hslColor.Luminosity *= 0.1;
@@ -266,7 +268,7 @@ namespace WindowsGame1
             int min = Math.Min(tempR, tempG);
             min = Math.Min(min, tempB);
 
-            int constant = (int)(min * 1);
+            int constant = (int)(min * SATURATE_CONSTANT);
 
             if (max == tempR)
             {
@@ -319,51 +321,5 @@ namespace WindowsGame1
             return colorContrast;
         }
 
-        private static Color saturate(Color color)
-        {
-            colours cCase = colours.Red;
-
-            if (color.R > color.G)
-            {
-                // Red Saturate Case
-                if (color.R > color.B)
-                {
-                    cCase = colours.Red;
-                }
-
-                // Blue Saturate Case
-                else if (color.B > color.G)
-                {
-                    cCase = colours.Blue;
-                }
-            }
-
-            // Green Saturate Case
-            else if (color.G > color.B)
-            {
-                cCase = colours.Green;
-            }
-
-            // Blue Saturate Case #2
-            else
-            {
-                cCase = colours.Blue;
-            }
-
-            switch (cCase)
-            {
-                case (colours.Red):
-                    //red
-                    break;
-                case (colours.Green):
-                    //green
-                    break;
-                default:
-                    //blue
-                    break;
-            }
-
-            return color;
-        }
-    }
+     }
 }

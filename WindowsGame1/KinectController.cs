@@ -192,7 +192,9 @@ namespace WindowsGame1
                 return false;
             }
 
-            kinectSensor.ElevationAngle = 15;
+            //kinectSensor.ElevationAngle = 15;
+
+            //This API has returned an exception from an HRESULT: 0x8007000D
 
 
             //kinectAudioSource = kinectSensor.AudioSource;
@@ -261,8 +263,8 @@ namespace WindowsGame1
                             // Store retrieved data.
                             users[i] = new Person(playerSkeleton);
 
-                            users[i].leftHandLocation = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(users[i].rightHandPosition, this.kinectSensor.DepthStream.Format);
-                            users[i].rightHandLocation = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(users[i].leftHandPosition, this.kinectSensor.DepthStream.Format);
+                            users[i].rightHandLocation = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(users[i].rightHandPosition, this.kinectSensor.DepthStream.Format);
+                            users[i].leftHandLocation = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(users[i].leftHandPosition, this.kinectSensor.DepthStream.Format);
 
                             users[i].rightHandRadius = users[i].rightHandLocation.Depth / 60;
                             users[i].leftHandRadius = users[i].leftHandLocation.Depth / 60;

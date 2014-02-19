@@ -39,6 +39,9 @@ namespace WindowsGame1
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        Texture2D rightHandSprite;
+        Texture2D leftHandSprite;
+
         BasicEffect basicEffect;
         VertexPositionColor[] verticies;
         VertexBuffer vertexBuffer;
@@ -192,6 +195,11 @@ namespace WindowsGame1
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            Content.RootDirectory = "Content1";
+
+            rightHandSprite = Content.Load<Texture2D>("rHand");
+            leftHandSprite = Content.Load<Texture2D>("lHand");
+
             kinectRGBVideo = new Texture2D(GraphicsDevice, 640, 480);
 
             basicEffect = new BasicEffect(GraphicsDevice);
@@ -265,7 +273,8 @@ namespace WindowsGame1
 
             spriteBatch.Begin();
 
-            DrawHandCircles();
+            //DrawHandCircles();
+            DrawHandSprite();
 
             spriteBatch.End();
 
@@ -318,7 +327,7 @@ namespace WindowsGame1
             vertexBuffer.SetData<VertexPositionColor>(verticies);
         }
 
-        public void DrawHandCircles()
+        public void DrawHandSprite()
         {
             DepthImagePoint rightHandDepthPoint, leftHandDepthPoint;
             Person[] users = kinectController.getUsers();
@@ -326,8 +335,33 @@ namespace WindowsGame1
             // For each of the users...
             for (int i = 0; i < kinectController.getNumUsers(); i++)
             {
-                //  ...we will draw the circles on their hands.
+                // collect the position of their hand locations
+                rightHandDepthPoint = users[i].getRightHandLocation();
+                leftHandDepthPoint = users[i].getLeftHandLocation();
 
+                // Define the location of the user's hands using vectors based on the location of their hands and accounting for the size of image
+                Vector2 vR = new Vector2((float)((rightHandDepthPoint.X - (rightHandSprite.Width / 2)) * xScale), (float)((rightHandDepthPoint.Y - (rightHandSprite.Height - 2)) * yScale));
+                Vector2 vL = new Vector2((float)((leftHandDepthPoint.X - (leftHandSprite.Width / 2)) * xScale), (float)((leftHandDepthPoint.Y - (leftHandSprite.Height / 2)) * yScale));
+
+
+                // Draw the sprites over the users hand locations.
+                spriteBatch.Draw(rightHandSprite, vR, Color.White);
+                spriteBatch.Draw(leftHandSprite, vL, Color.White);
+            }
+
+        }
+
+        public void DrawHandCircles()
+        {
+            DepthImagePoint rightHandDepthPoint, leftHandDepthPoint;
+            Person[] users = kinectController.getUsers();
+            
+
+            // For each of the users...
+            for (int i = 0; i < kinectController.getNumUsers(); i++)
+            {
+                //  ...we will draw the circles on their hands
+                
                 // The size of the circles is a function of the proximity of the user's hands to the kinect.
                 int rightCircleRadius = (int)((users[i].rightHandLocation.Depth / 120) * xScale);
                 int leftCircleRadius = (int)((users[i].leftHandLocation.Depth / 120) * xScale);
@@ -354,7 +388,6 @@ namespace WindowsGame1
                 spriteBatch.Draw(leftCircle, vL, Color.SteelBlue);
                 spriteBatch.Draw(rightCircle2, vR2, Color.HotPink);
                 spriteBatch.Draw(leftCircle2, vL2, Color.HotPink);
-
             }
         }
 
@@ -376,7 +409,8 @@ namespace WindowsGame1
             // Draw the raw RGB video feed on a 640x480 blank background.
             //spriteBatch.Draw(kinectRGBVideo, new Rectangle(0, 0, 640, 480), Color.White);
 
-            DrawHandCircles();
+            //DrawHandCircles();
+            DrawHandSprite();
             
             spriteBatch.End();
 
