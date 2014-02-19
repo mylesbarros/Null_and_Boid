@@ -15,8 +15,10 @@ namespace WindowsGame1
         enum colours { Red, Green, Blue };
 
         private const float MILLIMETER = 0.001f;
-        private const float SLIGHTLY_BRIGHTER = 1.12f;
+        private const float SLIGHTLY_BRIGHTER = 1.08f;
         private const float SIGNIFICANTLY_BRIGHTER = 1.36f;
+
+        private const int SATURATE_CONSTANT = 50;
         /* Computes a unique color for a user based on the average color of their torso.
          * Takes a TorsoData object that defines the dimensions of the user's torso, a width that defines the width
          * of the Kinect's ColorImageFrame, and a colorMap that defines the location of our colorData.
@@ -214,8 +216,8 @@ namespace WindowsGame1
                     // We need to brighten our resulting color by a non-trivial amount
                     userColorAverage = brightenColor(userColorAverage, SIGNIFICANTLY_BRIGHTER);
                 }
-            
-            
+
+                userColorAverage = saturateColor(userColorAverage);
 
             // HSLColor hslColor = new HSLColor(colorAverage.R, colorAverage.G, colorAverage.B);
             // hslColor.Luminosity *= 0.1;
@@ -247,6 +249,59 @@ namespace WindowsGame1
             capColorValue(tempR);
             capColorValue(tempG);
             capColorValue(tempB);
+
+            return new Color(tempR, tempG, tempB);
+        }
+
+        private static Color saturateColor(Color color)
+        {
+            int tempR = (int)(color.R);
+            int tempG = (int)(color.G);
+            int tempB = (int)(color.B);
+
+            int max = Math.Max(tempR, tempG);
+            max = Math.Max(max, tempB);
+            colours maxColor = colours.Red;
+
+            int min = Math.Min(tempR, tempG);
+            min = Math.Min(min, tempB);
+
+            int constant = (int)(min * 1);
+
+            if (max == tempR)
+            {
+                maxColor = colours.Red;
+            }
+            else if (max == tempG)
+            {
+                maxColor = colours.Green;
+            }
+            else
+            {
+                maxColor = colours.Blue;
+            }
+
+            tempR -= constant;
+            tempG -= constant;
+            tempB -= constant;
+
+            double ratio = 0.0;
+            switch (maxColor)
+            {
+                case colours.Red:
+                    ratio = max / (double)tempR;
+                    break;
+                case colours.Green:
+                    ratio = max / (double)tempG;
+                    break;
+                default:
+                    ratio = max / (double)tempB;
+                    break;
+            }
+
+            tempR = (int)(tempR * ratio);
+            tempG = (int)(tempG * ratio);
+            tempB = (int)(tempB * ratio);
 
             return new Color(tempR, tempG, tempB);
         }
