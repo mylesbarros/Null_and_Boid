@@ -16,6 +16,7 @@ namespace WindowsGame1
         // Gesture detection objects. Not unified by an interface because I hate myself.
         WaveGestureDetector waveGestureDetector;
         PressGestureDetector pressGestureDetector;
+        ScissorGestureDetector scissorGestureDetector;
 
         // List of persons in front of the Kinect
         Person[] users;
@@ -35,6 +36,8 @@ namespace WindowsGame1
         ColorImageFrame mostRecentFrame;
         Color[] mostRecentColorMap;
 
+        Button tutorialButton;
+
 
         public KinectController(KinectSensor kinectSensor, Stopwatch stopwatch, Flock flock, Texture2D kinectRGBVideo, GraphicsDeviceManager graphics)
         {
@@ -46,12 +49,15 @@ namespace WindowsGame1
 
             this.activeUsers = 0;
 
-            waveGestureDetector = new WaveGestureDetector(kinectSensor);
+            //waveGestureDetector = new WaveGestureDetector(kinectSensor);
             // Subscribe to the wave gesture detector as an observer.
-            waveGestureDetector.GestureDetected += new System.EventHandler<WaveGestureEventArgs>(this.WaveGestureDetected);
+            //waveGestureDetector.GestureDetected += new System.EventHandler<WaveGestureEventArgs>(this.WaveGestureDetected);
             pressGestureDetector = new PressGestureDetector();
             // Subscribe to the press gesture detector as an observer.
             pressGestureDetector.GestureDetected += new System.EventHandler<PressGestureEventArgs>(this.PressGestureDetected);
+            // Subscribe to the scissor gesture detector as an observer
+            scissorGestureDetector = new ScissorGestureDetector();
+            scissorGestureDetector.GestureDetected += new System.EventHandler<ScissorGestureEventArgs>(this.ScissorGestureDetected);
 
             // Initialize the found and connected device.
             if (kinectSensor.Status == KinectStatus.Connected)
@@ -60,7 +66,46 @@ namespace WindowsGame1
             }
         }
 
-        // Method called only when notification received from WaveGestureDetector object.
+        // Method called when notification received from ScissorGestureDetector object
+        private void ScissorGestureDetected(Object sender, ScissorGestureEventArgs eventArgs)
+        {
+            int userID = eventArgs.getUserID();
+
+            if (eventArgs.gestureIsOver() == true)
+            {
+                users[userID].canSpawnBoids = true;
+                return;
+            }
+
+            Person killer = users[userID];
+
+            DotNET.Point leftHandPos = killer.leftHand.getLocation();
+            DotNET.Point rightHandPos = killer.rightHand.getLocation();
+
+            // Produce new location from average of the left and right hands
+            double deletionX = (leftHandPos.X + rightHandPos.X) / 2;
+            double deletionY = (leftHandPos.Y + leftHandPos.Y) / 2;
+            DotNET.Point deletionZoneCenter = new DotNET.Point(deletionX, deletionY);
+            double deletionZoneRadius = ((killer.leftHand.getRadius() + killer.rightHand.getRadius()) / 2);
+            deletionZoneRadius = deletionZoneRadius * eventArgs.getRadiusScale();
+            double deletionZoneRadiusSq = Math.Pow(deletionZoneRadius, 2);
+
+            double distanceSq;
+
+            foreach (Agent agent in flock.GetAgents())
+            {
+                distanceSq = (Math.Pow((deletionZoneCenter.X - agent.getLocation().X), 2) + Math.Pow((deletionZoneCenter.Y - agent.getLocation().Y), 2));
+
+                if (distanceSq <= deletionZoneRadiusSq)
+                {
+                    agent.KillAgent();
+                }
+            }
+
+            users[userID].canSpawnBoids = false;
+        }
+
+        // Method called only when notification received from WaveGestureDetector object
         private void WaveGestureDetected(Object sender, WaveGestureEventArgs e)
         {
             stopwatch.Stop();
@@ -79,6 +124,7 @@ namespace WindowsGame1
 
             foreach (Agent agent in flock.GetAgents())
             {
+                // Distance formula
                 leftDistanceSq = (Math.Pow((leftHandLocation.X - agent.getLocation().X), 2) + Math.Pow((leftHandLocation.Y - agent.getLocation().Y), 2));
                 rightDistanceSq = (Math.Pow((rightHandLocation.X - agent.getLocation().X), 2) + Math.Pow((rightHandLocation.Y - agent.getLocation().Y), 2));
 
@@ -113,6 +159,12 @@ namespace WindowsGame1
         {
             // Retrieve identifier for which user is spawning boids.
             int userId = args.getUserID();
+
+            if (users[userId].canSpawnBoids == false)
+            {
+                return;
+            }
+
             // Determine which hand is spawning boids.
             bool isLeftHand = args.getLeftHandPressing();
             // Defines where the hand spawning the boids is located;
@@ -149,6 +201,11 @@ namespace WindowsGame1
                     users[userId].ResetTimeBetweenSpawn();
                 }
             }
+        }
+
+        private void tutorialButtonTriggered(Object sender, EventArgs e)
+        {
+            int a = 0;
         }
 
         public bool InitializeKinect()
@@ -192,7 +249,7 @@ namespace WindowsGame1
                 return false;
             }
 
-            //kinectSensor.ElevationAngle = 15;
+            kinectSensor.ElevationAngle = 15;
 
             //This API has returned an exception from an HRESULT: 0x8007000D
 
@@ -289,11 +346,20 @@ namespace WindowsGame1
                                 userHands[j + 1].UpdateRadius(users[i].leftHandRadius);
                             }
 
+                            users[i].rightHand = userHands[j];
+                            users[i].leftHand = userHands[j + 1];
+
+                            if (tutorialButton != null)
+                            {
+                                tutorialButton.UpdateHands(userHands);
+                            }
+
                             // Update user color.
                             updateUserColor(i);
 
                             // Update the gesture detectors of the user's physical state.
-                            waveGestureDetector.Update(playerSkeleton, i);
+                            //waveGestureDetector.Update(playerSkeleton, i);
+                            scissorGestureDetector.update(users[i], i);
                             pressGestureDetector.Update(playerSkeleton, i);
 
                             i++;
@@ -374,6 +440,12 @@ namespace WindowsGame1
             return 1000;
         }
 
+        public void addButton(Button newButton)
+        {
+            tutorialButton = newButton;
+            tutorialButton.ButtonTriggered += new System.EventHandler<EventArgs>(this.tutorialButtonTriggered);
+        }
+
         private void updateUserColor(int userId) // Why doesn't this just take a Person object?
         {
             if (mostRecentFrame != null && (userId < users.Length) && mostRecentColorMap.Length != 0)
@@ -382,6 +454,11 @@ namespace WindowsGame1
                 if ((curr.torsoTop.X == 0 && curr.torsoTop.Y == 0 && curr.torsoTop.Z == 0) == false)
                 {
                     users[userId].color = ColorUtility.ComputeUserColor(users[userId], mostRecentFrame.Width, mostRecentColorMap, kinectSensor);
+
+                    if (ColorUtility.colorycontrasty != 0)
+                    {
+                        int x = 0;
+                    }
                 }
             }
         }

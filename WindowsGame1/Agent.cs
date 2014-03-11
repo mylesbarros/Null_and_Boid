@@ -24,6 +24,9 @@ namespace WindowsGame1
 
         private bool isDead;
 
+        private double heightVariable;
+        private static double HEIGHT_START = 2;
+
 
         /// <summary>
         /// Construct an Agent from specified values
@@ -47,6 +50,7 @@ namespace WindowsGame1
             color = Color.Black;
 
             isDead = false;
+            heightVariable = HEIGHT_START;
 
             this.radius = radius;
             radiusSq = Math.Pow(radius, 2);
@@ -71,6 +75,7 @@ namespace WindowsGame1
             heading = new Vector2(initialHeading.X, initialHeading.Y);
 
             color = Color.Black;
+            heightVariable = HEIGHT_START;
 
             isDead = false;
 
@@ -95,6 +100,7 @@ namespace WindowsGame1
             color = Color.Black;
 
             isDead = false;
+            heightVariable = HEIGHT_START;
 
             radius = DEFAULT_RADIUS;
             radiusSq = Math.Pow(radius, 2);
@@ -132,6 +138,11 @@ namespace WindowsGame1
             Vector2 moveVect = Vector2.Multiply(heading, (float)(velocity * delta));
             location = DotNET.Point.Add(location, new DotNET.Vector(moveVect.X, moveVect.Y));
             wraparound();
+
+            if (heightVariable > 0)
+            {
+                heightVariable -= (delta / 50);
+            }
         }
 
         /// <summary>
@@ -141,6 +152,11 @@ namespace WindowsGame1
         public Vector2 getHeading()
         {
             return heading;
+        }
+
+        public double getHeightVar()
+        {
+            return heightVariable;
         }
 
         /// <summary>

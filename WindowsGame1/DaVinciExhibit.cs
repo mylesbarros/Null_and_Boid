@@ -20,6 +20,7 @@ using Microsoft.Speech.AudioFormat;
 using Microsoft.Speech.Recognition;
 using System.IO;
 using System.Threading;
+using System.Text;
 
 namespace WindowsGame1
 {
@@ -41,6 +42,11 @@ namespace WindowsGame1
 
         Texture2D rightHandSprite;
         Texture2D leftHandSprite;
+        Texture2D tutorialButtonSprite;
+
+        SpriteFont font1;
+
+        Boolean tutorialModeOn;
 
         BasicEffect basicEffect;
         VertexPositionColor[] verticies;
@@ -51,12 +57,13 @@ namespace WindowsGame1
         //Matrix projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45), (float)gameWidth / (float)gameHeight, .01f, 100f);
         Matrix projection = Matrix.CreateOrthographicOffCenter(0, (float)gameWidth, (float)gameHeight, 0, 1f, 1000f);
 
+        Button tutorialButton;
+
         Texture2D kinectRGBVideo; 
 
         KinectSensor kinectSensor;
 
         Flock flock;
-
         
         // Used to keep track of boid spawning.
         Stopwatch stopwatch;
@@ -84,7 +91,8 @@ namespace WindowsGame1
 
             stopwatch = new Stopwatch();
 
-            flock = new Flock(50, dataWidth, dataHeight, 80);
+            flock = new Flock(50, dataWidth, dataHeight, 50);
+            tutorialModeOn = true;
 
             DiscoverKinectSensor();
 
@@ -197,12 +205,23 @@ namespace WindowsGame1
 
             Content.RootDirectory = "Content1";
 
+            font1 = Content.Load<SpriteFont>("ArialFont");
+
             rightHandSprite = Content.Load<Texture2D>("rHand");
             leftHandSprite = Content.Load<Texture2D>("lHand");
+
+            tutorialButtonSprite = Content.Load<Texture2D>("tutorialImage");
+
+            DotNET.Point tutorialButtonLocation = new DotNET.Point(gameWidth - tutorialButtonSprite.Width, 0 + tutorialButtonSprite.Height);
+            tutorialButton = new Button(tutorialButtonSprite, tutorialButtonLocation, 2400);
+
+            tutorialButton.ButtonTriggered += button_ButtonTriggered;
 
             kinectRGBVideo = new Texture2D(GraphicsDevice, 640, 480);
 
             basicEffect = new BasicEffect(GraphicsDevice);
+
+            kinectController.addButton(tutorialButton);
 
             //verticies = new VertexPositionColor[3];
 
@@ -223,6 +242,11 @@ namespace WindowsGame1
             kinectSensor.Dispose();
         }
 
+        public void button_ButtonTriggered(object sender, System.EventArgs e)
+        {
+            tutorialModeOn = !tutorialModeOn;
+        }
+
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
@@ -237,6 +261,11 @@ namespace WindowsGame1
                 {
                     passiveAgents.Add(userHands[i]);
                 }
+            }
+
+            if (tutorialButton != null)
+            {
+                tutorialButton.Update();
             }
 
             base.Update(gameTime);
@@ -275,10 +304,47 @@ namespace WindowsGame1
 
             //DrawHandCircles();
             DrawHandSprite();
+            DrawText();
+
+            if (tutorialButton != null)
+            {
+                DrawButtonSprite(tutorialButton);
+            }
 
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        public void DrawText()
+        {
+            StringBuilder builder = new StringBuilder();
+
+            //Hand[] hands = kinectController.getHands();
+
+            //for (int i = 0; i < hands.Count(); i++)
+            //{
+            //    if (hands[i] != null && hands[i].IsActive() == true)
+            //    {
+            //        builder.Clear();
+            //        builder.Append("Hand at: (");
+            //        builder.Append(hands[i].getLocation().X * xScale);
+            //        builder.Append(", ");
+            //        builder.Append(hands[i].getLocation().Y * yScale);
+            //        builder.Append(")");
+            //        spriteBatch.DrawString(font1, builder.ToString(), new Vector2(10, 10 + (20 * i)), Color.Black);
+            //    }
+            //}
+
+            if (tutorialModeOn)
+            {
+                String tutorialText = "This is a Tutorial for What the Flock?";
+                String tutorialText2 = "to exit the tutorial, hold your hand over the information icon";
+
+                spriteBatch.DrawString(font1, tutorialText, new Vector2(10, 10), Color.Black);
+                spriteBatch.DrawString(font1, tutorialText2, new Vector2(10, 30), Color.Black);
+            }
+
         }
 
         public void MakeTriangles()
@@ -310,15 +376,15 @@ namespace WindowsGame1
 
                 verticies[i] = new VertexPositionColor(
                     new Vector3((float)((tx1 * Math.Cos(theta)) - (ty1 * Math.Sin(theta)) + agent.getLocation().X * xScale), 
-                        (float)((ty1 * Math.Cos(theta)) + (tx1 * Math.Sin(theta)) + agent.getLocation().Y * yScale), 0f), agent.color);
+                        (float)((ty1 * Math.Cos(theta)) + (tx1 * Math.Sin(theta)) + agent.getLocation().Y * yScale), -10f), agent.color);
 
                 verticies[i + 1] = new VertexPositionColor(
                     new Vector3((float)((tx2 * Math.Cos(theta)) - (ty2 * Math.Sin(theta)) + agent.getLocation().X * xScale),
-                        (float)((ty2 * Math.Cos(theta)) + (tx2 * Math.Sin(theta)) + agent.getLocation().Y * yScale), 0f), agent.color);
+                        (float)((ty2 * Math.Cos(theta)) + (tx2 * Math.Sin(theta)) + agent.getLocation().Y * yScale), -10f), agent.color);
 
                 verticies[i + 2] = new VertexPositionColor(
                     new Vector3((float)((tx3 * Math.Cos(theta)) - (ty3 * Math.Sin(theta)) + agent.getLocation().X * xScale),
-                        (float)((ty3 * Math.Cos(theta)) + (tx3 * Math.Sin(theta)) + agent.getLocation().Y * yScale), 0f), agent.color);
+                        (float)((ty3 * Math.Cos(theta)) + (tx3 * Math.Sin(theta)) + agent.getLocation().Y * yScale), -10f), agent.color);
 
                 i += 3;
             }
@@ -327,6 +393,7 @@ namespace WindowsGame1
             vertexBuffer.SetData<VertexPositionColor>(verticies);
         }
 
+        private const float HAND_SCALE_DIVISOR = 18f;
         public void DrawHandSprite()
         {
             DepthImagePoint rightHandDepthPoint, leftHandDepthPoint;
@@ -344,51 +411,21 @@ namespace WindowsGame1
                 Vector2 vL = new Vector2((float)((leftHandDepthPoint.X - (leftHandSprite.Width / 2)) * xScale), (float)((leftHandDepthPoint.Y - (leftHandSprite.Height / 2)) * yScale));
 
 
-                // Draw the sprites over the users hand locations.
-                spriteBatch.Draw(rightHandSprite, vR, Color.White);
-                spriteBatch.Draw(leftHandSprite, vL, Color.White);
+                // Draw the sprites over the users hand locations
+                spriteBatch.Draw(rightHandSprite, vR, null, Color.White, 0f, Vector2.Zero, users[i].rightHand.getRadius() / HAND_SCALE_DIVISOR, SpriteEffects.None, 0f);
+                spriteBatch.Draw(leftHandSprite, vL, null, Color.White, 0f, Vector2.Zero, users[i].leftHand.getRadius() / HAND_SCALE_DIVISOR, SpriteEffects.None, 0f);
             }
 
         }
 
-        public void DrawHandCircles()
+        private void DrawButtonSprite(Button b)
         {
-            DepthImagePoint rightHandDepthPoint, leftHandDepthPoint;
-            Person[] users = kinectController.getUsers();
-            
+            Texture2D buttonSprite = b.getSprite();
+            DotNET.Point buttonLocation = b.getLocation();
 
-            // For each of the users...
-            for (int i = 0; i < kinectController.getNumUsers(); i++)
-            {
-                //  ...we will draw the circles on their hands
-                
-                // The size of the circles is a function of the proximity of the user's hands to the kinect.
-                int rightCircleRadius = (int)((users[i].rightHandLocation.Depth / 120) * xScale);
-                int leftCircleRadius = (int)((users[i].leftHandLocation.Depth / 120) * xScale);
+            Vector2 buttonVector = new Vector2((float) (buttonLocation.X - (buttonSprite.Width / 2)), (float)(buttonLocation.Y - (buttonSprite.Height / 2)));
 
-                // The circle textures that define the left and the righthand circles.
-                Texture2D rightCircle = CreateCircle(rightCircleRadius);
-                Texture2D leftCircle = CreateCircle(leftCircleRadius);
-
-                Texture2D rightCircle2 = CreateCircle(rightCircleRadius + 1);
-                Texture2D leftCircle2 = CreateCircle(leftCircleRadius + 1);
-
-                rightHandDepthPoint = users[i].getRightHandLocation();
-                leftHandDepthPoint = users[i].getLeftHandLocation();
-
-                // Define the location of the user's hands using vectors based on the location of their hands and accounting for the radii.
-                Vector2 vR = new Vector2((float)((rightHandDepthPoint.X - rightCircleRadius) * xScale), (float)((rightHandDepthPoint.Y - rightCircleRadius) * yScale));
-                Vector2 vL = new Vector2((float)((leftHandDepthPoint.X - leftCircleRadius) * xScale), (float)((leftHandDepthPoint.Y - leftCircleRadius) * yScale));
-                Vector2 vR2 = new Vector2((float)((rightHandDepthPoint.X - rightCircleRadius +1) * xScale), (float)((rightHandDepthPoint.Y - rightCircleRadius+1) * yScale));
-                Vector2 vL2 = new Vector2((float)((leftHandDepthPoint.X - leftCircleRadius+1) * xScale), (float)((leftHandDepthPoint.Y - leftCircleRadius+1) * yScale));
-
-
-                // Draw the circles defined above to the screen using the user's unique color.
-                spriteBatch.Draw(rightCircle, vR, Color.SteelBlue);
-                spriteBatch.Draw(leftCircle, vL, Color.SteelBlue);
-                spriteBatch.Draw(rightCircle2, vR2, Color.HotPink);
-                spriteBatch.Draw(leftCircle2, vL2, Color.HotPink);
-            }
+            spriteBatch.Draw(buttonSprite, buttonVector, null, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
         }
 
         public void DrawSprite(GameTime gameTime)
@@ -396,15 +433,6 @@ namespace WindowsGame1
             GraphicsDevice.Clear(Color.White);
 
             spriteBatch.Begin();
-
-            // Draw dem boids
-            Texture2D circle;
-            foreach (Agent agent in flock.GetAgents())
-            {
-                circle = CreateCircle(5);
-
-                spriteBatch.Draw(circle, new Vector2((float)agent.getLocation().X, (float)agent.getLocation().Y), agent.color);
-            }
 
             // Draw the raw RGB video feed on a 640x480 blank background.
             //spriteBatch.Draw(kinectRGBVideo, new Rectangle(0, 0, 640, 480), Color.White);
@@ -415,39 +443,6 @@ namespace WindowsGame1
             spriteBatch.End();
 
             base.Draw(gameTime);
-        }
-
-        
-
-        public Texture2D CreateCircle(int radius)
-        {
-            int outerRadius = radius * 2 + 2; // So circle doesn't go out of bounds 
-            Texture2D texture = new Texture2D(GraphicsDevice, outerRadius, outerRadius);
-
-            Color[] data = new Color[outerRadius * outerRadius];
-
-            // Color the entire texture transparent first.
-            for (int i = 0; i < data.Length; i++)
-            {
-                data[i] = Color.Transparent;
-            }
-
-
-                int x, y;
-
-                double angleStep = 1f / (radius);
-
-                for (double angle = 0; angle < Math.PI * 2; angle += angleStep)
-                {
-                    // Use the parametric definition of a circle: http://en.wikipedia.org/wiki/Circle#Cartesian_coordinates
-                    x = (int)Math.Round(radius + radius * Math.Cos(angle));
-                    y = (int)Math.Round(radius + radius * Math.Sin(angle));
-
-                    data[y * outerRadius + x + 1] = Color.White;
-                }
-
-            texture.SetData(data);
-            return texture;
         }
     }
 }

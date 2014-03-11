@@ -130,6 +130,8 @@
   <ItemGroup>
     <Compile Include="Agent.cs" />
     <Compile Include="Class1.cs" />
+    <Compile Include="Button.cs" />
+    <Compile Include="ScissorGestureDetector.cs" />
     <Compile Include="Person.cs" />
     <Compile Include="KinectController.cs" />
     <Compile Include="ColorUtility.cs" />

@@ -8,7 +8,7 @@ using Microsoft.Kinect;
 
 namespace WindowsGame1
 {
-    class Hand : Flockable
+    public class Hand : Flockable
     {
         private DotNET.Point currentLocation;
         private DotNET.Point previousLocation;
@@ -16,6 +16,7 @@ namespace WindowsGame1
         private Joint prevHandData;
 
         private Vector2 heading;
+        private Vector2 velocity;
 
         private Boolean active;
 
@@ -67,7 +68,8 @@ namespace WindowsGame1
 
                 if (tempHeading.X != 0 && tempHeading.Y != 0)
                 {
-                    heading = new Vector2((float) tempHeading.X, (float) tempHeading.Y);
+                    velocity = new Vector2((float) tempHeading.X, (float) tempHeading.Y);
+                    heading = new Vector2(velocity.X, velocity.Y);
                     heading.Normalize();
                 }
             }

@@ -14,9 +14,11 @@ namespace WindowsGame1
 
         enum colours { Red, Green, Blue };
 
+        public static int colorycontrasty = 0;
+
         private const float MILLIMETER = 0.001f;
-        private const float SLIGHTLY_BRIGHTER = 1.08f;
-        private const float SIGNIFICANTLY_BRIGHTER = 1.36f;
+        private const float SLIGHTLY_BRIGHTER = 1.01f;
+        private const float SIGNIFICANTLY_BRIGHTER = 1.46f;
 
         private const float SATURATION_RATIO = .2f;
 
@@ -205,9 +207,10 @@ namespace WindowsGame1
 
             int colorContrast = computerContrast(outerColorAverage, userColorAverage);
 
+            colorycontrasty = colorContrast;
             
                 // If the contrast between the user and the surrounding area is high...
-                if (colorContrast > 125)
+                if (colorContrast > 58)
                 {
                     // Then we only need to brighten the color of our resulting color by a small amount
                    userColorAverage = brightenColor(userColorAverage, SLIGHTLY_BRIGHTER);

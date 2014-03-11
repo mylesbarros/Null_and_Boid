@@ -28,6 +28,8 @@ namespace WindowsGame1
             torsoBottom = spine.Position;
 
             this.color = new Color();
+
+            canSpawnBoids = true;
         }
 
         public Person(SkeletonPoint leftHand, SkeletonPoint rightHand, SkeletonPoint torsoTop, SkeletonPoint torsoBottom, Color c)
@@ -49,6 +51,8 @@ namespace WindowsGame1
                 timeBetweenSpawn = DEFAULT_TIME_BETWEEN_SPAWN;
                 lastSpawnedBoidTimestampLeft = 0;
                 lastSpawnedBoidTimestampRight = 0;
+
+                canSpawnBoids = true;
             }
 
             public Person(SkeletonPoint leftHand, SkeletonPoint rightHand, SkeletonPoint torsoTop, SkeletonPoint torsoBottom)
@@ -70,6 +74,8 @@ namespace WindowsGame1
                 timeBetweenSpawn = DEFAULT_TIME_BETWEEN_SPAWN;
                 lastSpawnedBoidTimestampLeft = 0;
                 lastSpawnedBoidTimestampRight = 0;
+
+                canSpawnBoids = true;
             }
 
             public Person(SkeletonPoint leftHand, SkeletonPoint rightHand)
@@ -91,6 +97,8 @@ namespace WindowsGame1
                 timeBetweenSpawn = DEFAULT_TIME_BETWEEN_SPAWN;
                 lastSpawnedBoidTimestampLeft = 0;
                 lastSpawnedBoidTimestampRight = 0;
+
+                canSpawnBoids = true;
             }
 
             public void ResetTimeBetweenSpawn()
@@ -147,6 +155,9 @@ namespace WindowsGame1
             public SkeletonPoint rightHandPosition;
             public SkeletonPoint leftHandPosition;
 
+            public Hand leftHand;
+            public Hand rightHand;
+
             public SkeletonPoint torsoTop;
             public SkeletonPoint torsoBottom;
 
@@ -162,6 +173,8 @@ namespace WindowsGame1
 
             public long lastSpawnedBoidTimestampLeft;
             public long lastSpawnedBoidTimestampRight;
+
+            public bool canSpawnBoids;
 
             private const long DEFAULT_TIME_BETWEEN_SPAWN = 80;
         }
