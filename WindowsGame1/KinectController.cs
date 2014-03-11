@@ -31,7 +31,6 @@ namespace WindowsGame1
         GraphicsDeviceManager graphics;
 
         //THESE NEED TO BE CLEANED UP
-        Hand[] userHands;
         DepthImagePixel[] depthData;
         ColorImageFrame mostRecentFrame;
         Color[] mostRecentColorMap;
@@ -233,8 +232,6 @@ namespace WindowsGame1
 
             depthData = new DepthImagePixel[kinectSensor.DepthStream.FramePixelDataLength];
 
-
-            userHands = new Hand[12];
             Hand.setSensor(this.kinectSensor);
 
             stopwatch.Start(); // ToDo: Stopwatch must be reset every ~ 2.9 million centuries
@@ -249,7 +246,7 @@ namespace WindowsGame1
                 return false;
             }
 
-            kinectSensor.ElevationAngle = 15;
+            //kinectSensor.ElevationAngle = 15;
 
             //This API has returned an exception from an HRESULT: 0x8007000D
 
@@ -326,32 +323,9 @@ namespace WindowsGame1
                             users[i].rightHandRadius = users[i].rightHandLocation.Depth / 60;
                             users[i].leftHandRadius = users[i].leftHandLocation.Depth / 60;
 
-                            if (userHands[j] == null)
-                            {
-                                userHands[j] = new Hand(rightHand);
-                            }
-                            else
-                            {
-                                userHands[j].Update(rightHand);
-                                userHands[j].UpdateRadius(users[i].rightHandRadius);
-                            }
-
-                            if (userHands[j + 1] == null)
-                            {
-                                userHands[j + 1] = new Hand(leftHand);
-                            }
-                            else
-                            {
-                                userHands[j + 1].Update(leftHand);
-                                userHands[j + 1].UpdateRadius(users[i].leftHandRadius);
-                            }
-
-                            users[i].rightHand = userHands[j];
-                            users[i].leftHand = userHands[j + 1];
-
                             if (tutorialButton != null)
                             {
-                                tutorialButton.UpdateHands(userHands);
+                                tutorialButton.UpdateHands(users);
                             }
 
                             // Update user color.
@@ -368,14 +342,14 @@ namespace WindowsGame1
                     } // end foreach
 
                     activeUsers = i;
-                    // Deactivate all unused hands
-                    for (int k = j + 1; j < userHands.Count(); j++)
-                    {
-                        if (userHands[k] != null)
-                        {
-                            userHands[k].NotActive();
-                        }
-                    }
+                    //// Deactivate all unused hands
+                    //for (int k = j + 1; j < userHands.Count(); j++)
+                    //{
+                    //    if (userHands[k] != null)
+                    //    {
+                    //        userHands[k].NotActive();
+                    //    }
+                    //}
                 } // end if
             } // end using
         } // end method
@@ -426,7 +400,24 @@ namespace WindowsGame1
 
         public Hand[] getHands()
         {
-            return userHands;
+            Hand[] hands;
+
+            if (users != null)
+            {
+                hands = new Hand[users.Length * 2];
+
+                for (int i = 0; i < users.Length; i++)
+                {
+                    hands[2 * i] = users[i].leftHand;
+                    hands[(2 * i) + 1] = users[i].rightHand;
+                }
+
+                return hands;
+            }
+
+            hands = new Hand[0];
+
+            return hands;
         }
 
         public int getDepthAtPoint(Vector2 point, int imageWidth)

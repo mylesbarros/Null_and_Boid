@@ -33,7 +33,7 @@ namespace WindowsGame1
         private float radius;
         private float radiusSq;
 
-        private Hand[] hands;
+        private Person[] hands;
 
         public static double[] distances;
 
@@ -53,7 +53,7 @@ namespace WindowsGame1
             minNecessaryInteractionTime = minInteractionTime;
             stopwatch = new Stopwatch();
 
-            hands = new Hand[6];
+            hands = new Person[6];
         }
 
         public void setVisualRepresentation(Texture2D sprite)
@@ -66,7 +66,7 @@ namespace WindowsGame1
             return sprite;
         }
 
-        public void UpdateHands(Hand[] newHands)
+        public void UpdateHands(Person[] newHands)
         {
             if (newHands != null)
             {
@@ -84,9 +84,9 @@ namespace WindowsGame1
         {
                 if (hands != null)
                 {
-                    Hand hand;
-                    DotNET.Point handLoc;
-                    double dist, x, y;
+                    Hand hand1 = null;
+                    Hand hand2 = null;
+                    
                     Boolean handInteracting = false;
                     distances = new double[hands.Length];
                     for (int i = 0; i < hands.Length; i++) // for each hand...
@@ -94,27 +94,12 @@ namespace WindowsGame1
                         if (handInteracting == false)
                         {
 
-                            hand = hands[i];
-                            if (hand != null)
-                            {
-                                handLoc = hand.getLocation();
+                            hand1 = hands[i].leftHand;
+                            hand2 = hands[i].rightHand;
 
-                                x = handLoc.X * DaVinciExhibit.xScale;
-                                y = handLoc.Y * DaVinciExhibit.yScale;
-
-                                DotNET.Point convertedHandLoc = new DotNET.Point(x, y);
-
-                                // Compute the distance from the interaction button to a hand accessing it
-                                dist = Math.Pow(Location.X - convertedHandLoc.X, 2) + Math.Pow(Location.Y - convertedHandLoc.Y, 2);
-                                distances[i] = dist;
-                                // If a hand is touching the TutorialButton...
-                                if (dist < (radiusSq + hand.getRadiusSq()))
-                                {
-                                    handInteracting = true;
-                                }
-                            }
+                            handInteracting = handInRange(hand1, (2 * i));
+                            handInteracting = handInRange(hand2, (2 * i) + 1); 
                         }
-
                     }
                     
                     if (handInteracting == true)
@@ -152,6 +137,33 @@ namespace WindowsGame1
 
             }
         
+        }
+
+        public Boolean handInRange(Hand hand, int i)
+        {
+            DotNET.Point handLoc;
+            double dist, x, y;
+
+            if (hand != null)
+            {
+                handLoc = hand.getLocation();
+
+                x = handLoc.X * DaVinciExhibit.xScale;
+                y = handLoc.Y * DaVinciExhibit.yScale;
+
+                DotNET.Point convertedHandLoc = new DotNET.Point(x, y);
+
+                // Compute the distance from the interaction button to a hand accessing it
+                dist = Math.Pow(Location.X - convertedHandLoc.X, 2) + Math.Pow(Location.Y - convertedHandLoc.Y, 2);
+                distances[i] = dist;
+                // If a hand is touching the TutorialButton...
+                if (dist < (radiusSq + hand.getRadiusSq()))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
