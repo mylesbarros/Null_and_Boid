@@ -47,6 +47,7 @@ namespace WindowsGame1
         SpriteFont font1;
 
         Boolean tutorialModeOn;
+        Tutorial currentTutorial;
 
         BasicEffect basicEffect;
         VertexPositionColor[] verticies;
@@ -93,6 +94,7 @@ namespace WindowsGame1
 
             flock = new Flock(50, dataWidth, dataHeight, 50);
             tutorialModeOn = true;
+            currentTutorial = new GuideTutorial(this);
 
             DiscoverKinectSensor();
 
@@ -242,9 +244,23 @@ namespace WindowsGame1
             kinectSensor.Dispose();
         }
 
+        public void setTutorialState(Tutorial tutorial)
+        {
+            this.currentTutorial = tutorial;
+        }
+
         public void button_ButtonTriggered(object sender, System.EventArgs e)
         {
-            tutorialModeOn = !tutorialModeOn;
+            if (tutorialModeOn == false)
+            {
+                currentTutorial.start();
+                tutorialModeOn = true;
+            }
+            else
+            {
+                currentTutorial.stop();
+                tutorialModeOn = false;
+            }
         }
 
         protected override void Update(GameTime gameTime)
@@ -266,6 +282,11 @@ namespace WindowsGame1
             if (tutorialButton != null)
             {
                 tutorialButton.Update();
+            }
+
+            if (tutorialModeOn == true)
+            {
+                currentTutorial.update(gameTime.ElapsedGameTime.TotalMilliseconds);
             }
 
             base.Update(gameTime);
@@ -338,11 +359,13 @@ namespace WindowsGame1
 
             if (tutorialModeOn)
             {
-                String tutorialText = "This is a Tutorial for What the Flock?";
-                String tutorialText2 = "to exit the tutorial, hold your hand over the information icon";
+                //String tutorialText = "This is a Tutorial for What the Flock?";
+                //String tutorialText2 = "to exit the tutorial, hold your hand over the information icon";
 
-                spriteBatch.DrawString(font1, tutorialText, new Vector2(10, 10), Color.Black);
-                spriteBatch.DrawString(font1, tutorialText2, new Vector2(10, 30), Color.Black);
+                //spriteBatch.DrawString(font1, tutorialText, new Vector2(10, 10), Color.Black);
+                //spriteBatch.DrawString(font1, tutorialText2, new Vector2(10, 30), Color.Black);
+
+                spriteBatch.DrawString(font1, currentTutorial.getDrawText(), new Vector2(10, 10), Color.Black);
             }
 
         }
@@ -400,7 +423,7 @@ namespace WindowsGame1
             Person[] users = kinectController.getUsers();
 
             // For each of the users...
-            for (int i = 0; i < kinectController.getNumUsers(); i++)
+            for (int i = 0; i < users.Length; i++)
             {
                 // collect the position of their hand locations
                 rightHandDepthPoint = users[i].getRightHandLocation();

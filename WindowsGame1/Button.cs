@@ -93,10 +93,12 @@ namespace WindowsGame1
                     {
                         if (handInteracting == false)
                         {
-
-                            hand1 = hands[i].leftHand;
-                            hand2 = hands[i].rightHand;
-
+                            if (hands[i] != null)
+                            {
+                                hand1 = hands[i].leftHand;
+                                hand2 = hands[i].rightHand;
+                            }
+                            
                             handInteracting = handInRange(hand1, (2 * i));
                             handInteracting = handInRange(hand2, (2 * i) + 1); 
                         }
@@ -155,7 +157,7 @@ namespace WindowsGame1
 
                 // Compute the distance from the interaction button to a hand accessing it
                 dist = Math.Pow(Location.X - convertedHandLoc.X, 2) + Math.Pow(Location.Y - convertedHandLoc.Y, 2);
-                distances[i] = dist;
+                //distances[i] = dist;
                 // If a hand is touching the TutorialButton...
                 if (dist < (radiusSq + hand.getRadiusSq()))
                 {

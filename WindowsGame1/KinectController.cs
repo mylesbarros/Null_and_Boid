@@ -114,8 +114,8 @@ namespace WindowsGame1
             DepthImagePoint leftHandLocation = users[userId].leftHandLocation;
             DepthImagePoint rightHandLocation = users[userId].rightHandLocation;
 
-            int leftHandRadius = users[userId].leftHandRadius + 1;
-            int rightHandRadius = users[userId].rightHandRadius + 1;
+            int leftHandRadius = users[userId].leftHand.getRadius() + 1;
+            int rightHandRadius = users[userId].rightHand.getRadius() +1;
             double leftHandRadiusSq = Math.Pow(leftHandRadius, 2);
             double rightHandRadiusSq = Math.Pow(rightHandRadius, 2);
             double leftDistanceSq;
@@ -320,8 +320,8 @@ namespace WindowsGame1
                             users[i].rightHandLocation = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(users[i].rightHandPosition, this.kinectSensor.DepthStream.Format);
                             users[i].leftHandLocation = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(users[i].leftHandPosition, this.kinectSensor.DepthStream.Format);
 
-                            users[i].rightHandRadius = users[i].rightHandLocation.Depth / 60;
-                            users[i].leftHandRadius = users[i].leftHandLocation.Depth / 60;
+                            users[i].setRightHandRadius(users[i].rightHandLocation.Depth / 60);
+                            users[i].setLeftHandRadius(users[i].leftHandLocation.Depth / 60);
 
                             if (tutorialButton != null)
                             {
@@ -390,7 +390,25 @@ namespace WindowsGame1
 
         public Person[] getUsers()
         {
-            return users;
+            if (users != null)
+            {
+                int i = 0;
+                while (users[i] != null)
+                {
+                    i++;
+                }
+
+                Person[] activeUsers = new Person[i];
+
+                for (int j = 0; j < activeUsers.Length; j++)
+                {
+                    activeUsers[j] = users[j];
+                }
+
+                return activeUsers;
+            }
+
+            return new Person[0];
         }
 
         public int getNumUsers()
@@ -401,15 +419,17 @@ namespace WindowsGame1
         public Hand[] getHands()
         {
             Hand[] hands;
+            Person[] activeUsers = getUsers();
 
-            if (users != null)
+            if (activeUsers != null)
             {
-                hands = new Hand[users.Length * 2];
+                hands = new Hand[activeUsers.Length * 2];
 
-                for (int i = 0; i < users.Length; i++)
+                for (int i = 0; i < activeUsers.Length; i++)
                 {
-                    hands[2 * i] = users[i].leftHand;
-                    hands[(2 * i) + 1] = users[i].rightHand;
+                    hands[2 * i] = activeUsers[i].leftHand;
+                    hands[(2 * i) + 1] = activeUsers[i].rightHand;
+
                 }
 
                 return hands;

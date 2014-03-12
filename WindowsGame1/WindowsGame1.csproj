@@ -129,8 +129,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Agent.cs" />
-    <Compile Include="Class1.cs" />
+    <Compile Include="DespawnTutorial.cs" />
+    <Compile Include="GuideTutorial.cs" />
+    <Compile Include="HSLColor.cs" />
     <Compile Include="Button.cs" />
+    <Compile Include="SpawnTutorial.cs" />
+    <Compile Include="Tutorial.cs" />
     <Compile Include="ScissorGestureDetector.cs" />
     <Compile Include="Person.cs" />
     <Compile Include="KinectController.cs" />
