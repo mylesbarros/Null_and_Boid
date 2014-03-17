@@ -108,21 +108,6 @@ namespace WindowsGame1
             return FLOCKING_WEIGHT;
         }
 
-        public void Active()
-        {
-            active = true;
-        }
-
-        public void NotActive()
-        {
-            active = false;
-        }
-
-        public bool IsActive()
-        {
-            return active;
-        }
-
         public static void setSensor(KinectSensor newSensor)
         {
             sensor = newSensor;

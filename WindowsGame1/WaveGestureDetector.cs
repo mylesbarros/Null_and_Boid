@@ -117,14 +117,14 @@ namespace WindowsGame1
             sensor = kSensor;
         }
 
-        public void Update(Skeleton skeleton, int userID)
+        public void Update(SkeletonWrapper skeleton, int userID)
         {
             stopwatch.Stop();
             long frameTimestamp = stopwatch.ElapsedMilliseconds;
 
             if (skeleton != null)
             {
-                    if (skeleton.TrackingState == SkeletonTrackingState.Tracked)
+                    if (skeleton.getTrackingState() == SkeletonTrackingState.Tracked)
                     {
                         // Check the state of the user's left and right hands to determine the relation of each to a 
                         // wave gesture.
@@ -144,7 +144,7 @@ namespace WindowsGame1
 
         private const double HAND_DISTANCE_THRESHHOLD_SQ = 0.042f;
 
-        private void TrackWave(Skeleton skeleton, int userID, ref WaveGestureTracker tracker, long timestamp)
+        private void TrackWave(SkeletonWrapper skeleton, int userID, ref WaveGestureTracker tracker, long timestamp)
         {
             // The check for a user wave in this implementation is fairly simple. If the user raises their hand directly above their
             // shoulder then they are merely primed for a wave. If they raise it above and to the left or right of their shoulder,
@@ -154,16 +154,10 @@ namespace WindowsGame1
 
             // Retrieve the relevent hand and shoulder for the user depending on which hand/shoulder pair that we
             // are checking for a wave.
-            JointType leftHandJointId = JointType.HandLeft;
-            JointType rightHandJointId = JointType.HandRight;
+            Joint leftHand = skeleton.getLeftHandJoint();
+            Joint rightHand = skeleton.getRightHandJoint();
 
-            JointType shoulderJointId = JointType.ShoulderCenter;
-            //      JointType
-
-            Joint leftHand = skeleton.Joints[leftHandJointId];
-            Joint rightHand = skeleton.Joints[rightHandJointId];
-
-            Joint centerOfShoulders = skeleton.Joints[shoulderJointId];
+            Joint centerOfShoulders = skeleton.getCenterShoulderJoint();
 
             // Metric measurement
             double distanceBetweenHandsSq = (Math.Pow(leftHand.Position.X - rightHand.Position.X, 2) + Math.Pow(leftHand.Position.Y - rightHand.Position.Y, 2));

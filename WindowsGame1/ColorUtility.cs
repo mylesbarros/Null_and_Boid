@@ -116,12 +116,12 @@ namespace WindowsGame1
 
             // Retrieve the position of the user's head as we can use its Y coordinate to define
             // the outer edge of the person
-            Joint personTopJoint = user.skeletonData.Joints[JointType.Head];
+            Joint personTopJoint = user.skeletonData.getHeadJoint();
             SkeletonPoint personTopPos = personTopJoint.Position;
 
             // Retrieve the position of the user's left shoulder as we can use its X coordinate
             // to define the outer edge of the person
-            Joint leftShoulderJoint = user.skeletonData.Joints[JointType.ShoulderLeft];
+            Joint leftShoulderJoint = user.skeletonData.getLeftShoulderJoint();
             SkeletonPoint leftShoulderPos = leftShoulderJoint.Position;
 
             // We define the top bound of the person to be excluded as being the height of the person
@@ -135,7 +135,7 @@ namespace WindowsGame1
             // We define the bottom bound of the person to be excluded as being their bottom right
             // foot, as this is caddy-corner to our upper bound, implying a rectangle that surrounds
             // the person
-            Joint personBottomBoundJoint = user.skeletonData.Joints[JointType.FootRight];
+            Joint personBottomBoundJoint = user.skeletonData.getRightFootJoint();
             SkeletonPoint personBottomBoundPos = personBottomBoundJoint.Position;
 
             // Convert the Skeletal location data to color location data so that our locations correspond

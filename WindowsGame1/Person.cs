@@ -8,24 +8,35 @@ namespace WindowsGame1
     /// </summary>
     public class Person
     {
+        private static int HASH_CODE = 0;
+        private int hashCode;
+        private bool isGhost;
 
-        public Person(Skeleton skeletonData)
+        // add isGhost!
+        public Person(SkeletonWrapper skeletonData, bool isGhost)
         {
+            hashCode = HASH_CODE;
+            HASH_CODE += 1;
+
             this.skeletonData = skeletonData;
+            this.isGhost = isGhost;
 
             // Retrieve hand data.
-            Joint rightHand = skeletonData.Joints[JointType.HandRight];
-            Joint leftHand = skeletonData.Joints[JointType.HandLeft];
+            Joint rightHand = skeletonData.getRightHandJoint();
+            Joint leftHand = skeletonData.getLeftHandJoint();
 
             // Retrieve torso data.
-            Joint shoulderCenter = skeletonData.Joints[JointType.ShoulderCenter];
-            Joint spine = skeletonData.Joints[JointType.Spine];
+            if (isGhost == false)
+            {
+                Joint shoulderCenter = skeletonData.getCenterShoulderJoint();
+                Joint spine = skeletonData.getSpineJoint();
+
+                torsoTop = shoulderCenter.Position;
+                torsoBottom = spine.Position;
+            }
 
             leftHandPosition = leftHand.Position;
-            rightHandPosition = rightHand.Position;
-
-            torsoTop = shoulderCenter.Position;
-            torsoBottom = spine.Position;
+            rightHandPosition = rightHand.Position; 
 
             this.color = new Color();
 
@@ -94,7 +105,27 @@ namespace WindowsGame1
             leftHand.UpdateRadius(radius);
         }
 
-        public Skeleton skeletonData;
+        public void updateSkeletonData(SkeletonWrapper skel)
+        {
+            skeletonData = skel;
+
+            Joint tempLeftHand, tempRightHand;
+            tempLeftHand = skeletonData.getLeftHandJoint();
+            tempRightHand = skeletonData.getRightHandJoint();
+
+            this.leftHand.Update(tempLeftHand);
+            this.rightHand.Update(tempRightHand);
+
+            leftHandPosition = tempLeftHand.Position;
+            rightHandPosition = tempRightHand.Position;
+        }
+
+        public int GetHashCode()
+        {
+            return hashCode;
+        }
+
+        public SkeletonWrapper skeletonData;
 
         public SkeletonPoint rightHandPosition;
         public SkeletonPoint leftHandPosition;

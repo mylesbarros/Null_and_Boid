@@ -11,7 +11,7 @@ namespace WindowsGame1
         protected DaVinciExhibit stateMachine;
         protected Tutorial nxtState;
         protected Stopwatch stopwatch;
-        protected Person ghostPerson;
+        protected SkeletonWrapper ghostSkeleton;
 
         public Tutorial(DaVinciExhibit stateMachine)
         {
@@ -26,6 +26,7 @@ namespace WindowsGame1
 
         public void start()
         {
+            stopwatch.Reset();
             stopwatch.Start();
         }
 
@@ -39,9 +40,9 @@ namespace WindowsGame1
             this.nxtState = next;
         }
 
-        private Person getPerson()
+        public SkeletonWrapper getGhostSkeleton()
         {
-            return ghostPerson;
+            return ghostSkeleton;
         }
     }
 }

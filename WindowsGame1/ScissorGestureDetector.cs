@@ -10,20 +10,20 @@ namespace WindowsGame1
 {
     class ScissorGestureEventArgs : EventArgs
     {
-        private int userID;
+        private Person user;
         private Boolean diverging;
         private double radiusScale;
 
-        public ScissorGestureEventArgs(int userID, Boolean diverging, double radiusScale)
+        public ScissorGestureEventArgs(Person user, Boolean diverging, double radiusScale)
         {
-            this.userID = userID;
+            this.user = user;
             this.diverging = diverging;
             this.radiusScale = radiusScale;
         }
 
-        public int getUserID()
+        public Person getUser()
         {
-            return userID;
+            return user;
         }
 
         public Boolean gestureIsOver()
@@ -65,7 +65,8 @@ namespace WindowsGame1
         }
 
         private long delta;
-        private ScissorGestureTracker[] scissorGestureTrackers;
+        private ScissorGestureTracker[] oldScissorGestureTrackers;
+        private Dictionary<Person, ScissorGestureTracker> scissorGestureTrackers;
 
         private const double CONTACT_SCALE = 1.25;
 
@@ -73,7 +74,7 @@ namespace WindowsGame1
 
         public ScissorGestureDetector()
         {
-            scissorGestureTrackers = new ScissorGestureTracker[6];
+            scissorGestureTrackers = new Dictionary<Person, ScissorGestureTracker>(6);
             delta = 0;
         }
 
@@ -82,29 +83,47 @@ namespace WindowsGame1
             delta = newDelta;
         }
 
-        public void update(Person subject, int userID)
+        private ScissorGestureTracker getTrackerForPerson(Person p)
+        {
+            bool extractionSuccessful;
+            ScissorGestureTracker output;
+
+            if (scissorGestureTrackers.ContainsKey(p) != true)
+            {
+                ScissorGestureTracker newSGT = new ScissorGestureTracker();
+
+                scissorGestureTrackers.Add(p, newSGT);
+            }
+
+            extractionSuccessful = scissorGestureTrackers.TryGetValue(p, out output);
+
+            return output;
+        }
+
+        public void update(Person subject)
         {
 
             if (subject.skeletonData != null)
             {
-                if (subject.skeletonData.TrackingState == SkeletonTrackingState.Tracked)
+                ScissorGestureTracker gestureTracker = this.getTrackerForPerson(subject);
+                if (subject.skeletonData.getTrackingState() == SkeletonTrackingState.Tracked)
                 {
                     // Check the state of the user's left and right hands to determine the relation of each to a 
                     // wave gesture.
-                    TrackGesture(subject, userID, ref this.scissorGestureTrackers[userID]);
+                    TrackGesture(subject, ref gestureTracker);
                 }
                 // If we can't track the user's motions we'll have to reset our data on them;
                 // they may have left and will be replaced by another user.
                 else
                 {
-                    this.scissorGestureTrackers[userID].reset();
+                    gestureTracker.reset();
                 } // end if-else
 
             }
 
         }
 
-        private void TrackGesture(Person person, int userID, ref ScissorGestureTracker gestureTracker)
+        private void TrackGesture(Person person, ref ScissorGestureTracker gestureTracker)
         {
             if (person.leftHand == null || person.rightHand == null)
             {
@@ -155,11 +174,11 @@ namespace WindowsGame1
             if (gestureTracker.currState == ScissorGestureState.Proximal)
             {
                 // send message
-                GestureDetected(this, new ScissorGestureEventArgs(userID, false, CONTACT_SCALE));
+                GestureDetected(this, new ScissorGestureEventArgs(person, false, CONTACT_SCALE));
             }
             else if (gestureTracker.currState == ScissorGestureState.Diverging)
             {
-                GestureDetected(this, new ScissorGestureEventArgs(userID, true, CONTACT_SCALE));
+                GestureDetected(this, new ScissorGestureEventArgs(person, true, CONTACT_SCALE));
             }
         }
     }

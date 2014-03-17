@@ -11,14 +11,14 @@ namespace WindowsGame1
     {
         private bool leftHandPressing;
         private bool rightHandPressing;
-        private int userID;
+        private Person user;
 
-        public PressGestureEventArgs(bool leftHandPressing, int userID)
+        public PressGestureEventArgs(bool leftHandPressing, Person user)
         {
             this.leftHandPressing = leftHandPressing;
             this.rightHandPressing = !leftHandPressing;
 
-            this.userID = userID;
+            this.user = user;
         }
 
         public bool getLeftHandPressing()
@@ -31,9 +31,9 @@ namespace WindowsGame1
             return rightHandPressing;
         }
 
-        public int getUserID()
+        public Person getUser()
         {
-            return userID;
+            return user;
         }
     }
 
@@ -55,15 +55,15 @@ namespace WindowsGame1
         // in the event that we need to change the implementation to be more complex. Also makes
         // maintaining observers easier, as I'm not familiar with C#'s peculiarities regarding static classes.
         // And, really, the code itself is already dubious.
-        public void Update(Skeleton skeleton, int userID)
+        public void Update(Person person)
         {
 
-            if (skeleton != null)
+            if (person != null && person.skeletonData != null)
             {
-                    if (skeleton.TrackingState == SkeletonTrackingState.Tracked)
+                    if (person.skeletonData.getTrackingState() == SkeletonTrackingState.Tracked)
                     {
-                        TrackPress(skeleton, userID, true);
-                        TrackPress(skeleton, userID, false);
+                        TrackPress(person, true);
+                        TrackPress(person, false);
                     }
 
                 }
@@ -72,7 +72,7 @@ namespace WindowsGame1
         // How far from an ideal arm extension we will still consider a press gesture.
         private const float ARM_EXTENSION_THRESHOLD = 0.015f; // Metric measurement.
 
-        private void TrackPress(Skeleton skeleton, int userID, bool isLeft)
+        private void TrackPress(Person person, bool isLeft)
         {
             /* We define a press gesture as being made up of two properties:
              * 1) whether the user's hand is below their shoulder when they make the gesture and
@@ -84,16 +84,22 @@ namespace WindowsGame1
              * tested this on an honest to God child it /also/ inadvertantly helps to accomodate the fact that children
              * have commicaly disproprotionate arms.
              */
+            SkeletonWrapper skeleton = person.skeletonData;
 
-            JointType handJointId = (isLeft) ? JointType.HandLeft : JointType.HandRight;
-            JointType shoulderJointId = (isLeft) ? JointType.ShoulderLeft : JointType.ShoulderRight;
-            JointType headJointId = JointType.Head;
-            JointType footJointId = (isLeft) ? JointType.FootLeft : JointType.FootRight;
-
-            Joint hand = skeleton.Joints[handJointId];
-            Joint shoulder = skeleton.Joints[shoulderJointId];
-            Joint head = skeleton.Joints[headJointId];
-            Joint foot = skeleton.Joints[footJointId];
+            Joint hand, shoulder, head, foot;
+            if (isLeft == true)
+            {
+                hand = skeleton.getLeftHandJoint();
+                shoulder = skeleton.getLeftShoulderJoint();
+                foot = skeleton.getLeftFootJoint();
+            }
+            else
+            {
+                hand = skeleton.getRightHandJoint();
+                shoulder = skeleton.getRightShoulderJoint();
+                foot = skeleton.getRightFootJoint();
+            }
+            head = skeleton.getHeadJoint();
 
             PressPosition pressPosition = PressPosition.None;
 
@@ -137,7 +143,7 @@ namespace WindowsGame1
                         // Then notify the observers that we have a press. There's going to be a party. There is going to be cake.
                         if (GestureDetected != null)
                         {
-                                    GestureDetected(this, new PressGestureEventArgs(isLeft, userID));
+                                    GestureDetected(this, new PressGestureEventArgs(isLeft, person));
                         } // end if
 
                     } // end if

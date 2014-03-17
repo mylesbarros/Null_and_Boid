@@ -20,7 +20,6 @@ namespace WindowsGame1
 
         // List of persons in front of the Kinect
         Person[] users;
-        int activeUsers;
 
         Stopwatch stopwatch;
         KinectSensor kinectSensor;
@@ -37,6 +36,10 @@ namespace WindowsGame1
 
         Button tutorialButton;
 
+        private Person ghostUser;
+
+        private const int MAX_NUM_USERS = 6;
+
 
         public KinectController(KinectSensor kinectSensor, Stopwatch stopwatch, Flock flock, Texture2D kinectRGBVideo, GraphicsDeviceManager graphics)
         {
@@ -46,7 +49,7 @@ namespace WindowsGame1
             this.kinectRGBVideo = kinectRGBVideo;
             this.graphics = graphics;
 
-            this.activeUsers = 0;
+            users = new Person[MAX_NUM_USERS];
 
             //waveGestureDetector = new WaveGestureDetector(kinectSensor);
             // Subscribe to the wave gesture detector as an observer.
@@ -68,15 +71,15 @@ namespace WindowsGame1
         // Method called when notification received from ScissorGestureDetector object
         private void ScissorGestureDetected(Object sender, ScissorGestureEventArgs eventArgs)
         {
-            int userID = eventArgs.getUserID();
+            Person gesturer = eventArgs.getUser();
 
             if (eventArgs.gestureIsOver() == true)
             {
-                users[userID].canSpawnBoids = true;
+                gesturer.canSpawnBoids = true;
                 return;
             }
 
-            Person killer = users[userID];
+            Person killer = gesturer;
 
             DotNET.Point leftHandPos = killer.leftHand.getLocation();
             DotNET.Point rightHandPos = killer.rightHand.getLocation();
@@ -101,7 +104,7 @@ namespace WindowsGame1
                 }
             }
 
-            users[userID].canSpawnBoids = false;
+            gesturer.canSpawnBoids = false;
         }
 
         // Method called only when notification received from WaveGestureDetector object
@@ -157,9 +160,9 @@ namespace WindowsGame1
         private void PressGestureDetected(Object sender, PressGestureEventArgs args)
         {
             // Retrieve identifier for which user is spawning boids.
-            int userId = args.getUserID();
+            Person gesturer = args.getUser();
 
-            if (users[userId].canSpawnBoids == false)
+            if (gesturer.canSpawnBoids == false)
             {
                 return;
             }
@@ -173,31 +176,31 @@ namespace WindowsGame1
             if (isLeftHand == true) // If they're spawning boids with the lefthand...
             {
                 // If the necessary amount of time has elapsed since the user last spawned a boid with the lefthand...
-                if ((stopwatch.ElapsedMilliseconds - users[userId].lastSpawnedBoidTimestampLeft) > users[userId].timeBetweenSpawn)
+                if ((stopwatch.ElapsedMilliseconds - gesturer.lastSpawnedBoidTimestampLeft) > gesturer.timeBetweenSpawn)
                 {
-                    depthPoint = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(users[userId].leftHandPosition, this.kinectSensor.DepthStream.Format);
+                    depthPoint = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(gesturer.leftHandPosition, this.kinectSensor.DepthStream.Format);
 
                     // Spawn the new boid where the user's hand is.
-                    flock.AddAgent(new DotNET.Point(depthPoint.X, depthPoint.Y), 40, users[userId].color);
+                    flock.AddAgent(new DotNET.Point(depthPoint.X, depthPoint.Y), 40, gesturer.color);
 
                     // Update when last this user spawned a boid with their left hand.
-                    users[userId].lastSpawnedBoidTimestampLeft = stopwatch.ElapsedMilliseconds;
-                    users[userId].ResetTimeBetweenSpawn();
+                    gesturer.lastSpawnedBoidTimestampLeft = stopwatch.ElapsedMilliseconds;
+                    gesturer.ResetTimeBetweenSpawn();
                 }
             }
             else // They're spawning a boid with their right hand.
             {
                 // If the necessary amount of time has elapsed since the user last spawned a boid with the righthand...
-                if ((stopwatch.ElapsedMilliseconds - users[userId].lastSpawnedBoidTimestampRight) > users[userId].timeBetweenSpawn)
+                if ((stopwatch.ElapsedMilliseconds - gesturer.lastSpawnedBoidTimestampRight) > gesturer.timeBetweenSpawn)
                 {
-                    depthPoint = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(users[userId].rightHandPosition, this.kinectSensor.DepthStream.Format);
+                    depthPoint = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(gesturer.rightHandPosition, this.kinectSensor.DepthStream.Format);
 
                     // Spawn the new boid where the user's hand is.
-                    flock.AddAgent(new DotNET.Point(depthPoint.X, depthPoint.Y), 40, users[userId].color);
+                    flock.AddAgent(new DotNET.Point(depthPoint.X, depthPoint.Y), 40, gesturer.color);
 
                     // Update when last this user spawned a boid with their right hand.
-                    users[userId].lastSpawnedBoidTimestampRight = stopwatch.ElapsedMilliseconds;
-                    users[userId].ResetTimeBetweenSpawn();
+                    gesturer.lastSpawnedBoidTimestampRight = stopwatch.ElapsedMilliseconds;
+                    gesturer.ResetTimeBetweenSpawn();
                 }
             }
         }
@@ -295,53 +298,34 @@ namespace WindowsGame1
                 if (skeletonFrame != null)
                 {
                     Skeleton[] skeletonData = new Skeleton[skeletonFrame.SkeletonArrayLength];
-                    users = new Person[skeletonFrame.SkeletonArrayLength];
 
                     int i = 0; // Defines the number of users that we have extracted data from.
-                    int j = 0;
 
                     skeletonFrame.CopySkeletonDataTo(skeletonData);
 
+                    Person currPerson;
                     foreach (Skeleton playerSkeleton in skeletonData)
                     {
                         if (playerSkeleton != null && playerSkeleton.TrackingState == SkeletonTrackingState.Tracked)
                         {
-                            // Retrieve hand data.
-                            Joint rightHand = playerSkeleton.Joints[JointType.HandRight];
-                            Joint leftHand = playerSkeleton.Joints[JointType.HandLeft];
+                            // Wrap the Skelton
+                            SkeletonWrapper skeletonWrap = new SkeletonWrapper(playerSkeleton);
 
-                            // Retrieve torso data.
-                            Joint shoulderCenter = playerSkeleton.Joints[JointType.ShoulderCenter];
-                            Joint spine = playerSkeleton.Joints[JointType.Spine];
+                            currPerson = users[i];
 
-                            // Store retrieved data.
-                            users[i] = new Person(playerSkeleton);
-
-                            users[i].rightHandLocation = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(users[i].rightHandPosition, this.kinectSensor.DepthStream.Format);
-                            users[i].leftHandLocation = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(users[i].leftHandPosition, this.kinectSensor.DepthStream.Format);
-
-                            users[i].setRightHandRadius(users[i].rightHandLocation.Depth / 60);
-                            users[i].setLeftHandRadius(users[i].leftHandLocation.Depth / 60);
-
-                            if (tutorialButton != null)
-                            {
-                                tutorialButton.UpdateHands(users);
-                            }
-
-                            // Update user color.
-                            updateUserColor(i);
-
-                            // Update the gesture detectors of the user's physical state.
-                            //waveGestureDetector.Update(playerSkeleton, i);
-                            scissorGestureDetector.update(users[i], i);
-                            pressGestureDetector.Update(playerSkeleton, i);
+                            users[i] = updatePerson(skeletonWrap, currPerson, false);
 
                             i++;
-                            j += 2;
                         } // end if
                     } // end foreach
 
-                    activeUsers = i;
+                    // add the ghosts
+
+                    for (int inactiveUser = (i + 1); inactiveUser < users.Length; inactiveUser++)
+                    {
+                        users[inactiveUser] = null;
+                    }
+
                     //// Deactivate all unused hands
                     //for (int k = j + 1; j < userHands.Count(); j++)
                     //{
@@ -353,6 +337,44 @@ namespace WindowsGame1
                 } // end if
             } // end using
         } // end method
+
+        private Person updatePerson(SkeletonWrapper skeletonWrap, Person person, bool isGhost)
+        {
+            // Retrieve hand data.
+            Joint rightHand = skeletonWrap.getRightHandJoint();
+            Joint leftHand = skeletonWrap.getLeftHandJoint();
+
+            // Store retrieved data.
+            if (person == null)
+            {
+                person = new Person(skeletonWrap, isGhost);
+            }
+            else
+            {
+                person.updateSkeletonData(skeletonWrap);
+            }
+
+            person.rightHandLocation = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(person.rightHandPosition, this.kinectSensor.DepthStream.Format);
+            person.leftHandLocation = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(person.leftHandPosition, this.kinectSensor.DepthStream.Format);
+
+            person.setRightHandRadius(person.rightHandLocation.Depth / 60);
+            person.setLeftHandRadius(person.leftHandLocation.Depth / 60);
+
+            if (tutorialButton != null)
+            {
+                tutorialButton.UpdateHands(users);
+            }
+
+            // Update user color.
+            updateUserColor(person);
+
+            // Update the gesture detectors of the user's physical state.
+            //waveGestureDetector.Update(playerSkeleton, i);
+            scissorGestureDetector.update(person);
+            pressGestureDetector.Update(person);
+
+            return person;
+        }
 
         void kinectSensor_ColorFrameReady(object sender, ColorImageFrameReadyEventArgs e)
         {
@@ -388,6 +410,22 @@ namespace WindowsGame1
             }
         }
 
+        public void updateGhost(SkeletonWrapper skel)
+        {
+            if (skel == null)
+            {
+                ghostUser = null;
+                return;
+            }
+
+            if (ghostUser == null)
+            {
+                ghostUser = new Person(skel, true);
+            }
+
+            updatePerson(skel, ghostUser, true);
+        }
+
         public Person[] getUsers()
         {
             if (users != null)
@@ -398,22 +436,28 @@ namespace WindowsGame1
                     i++;
                 }
 
-                Person[] activeUsers = new Person[i];
+                int activeGhost = 0;
+                if (ghostUser != null)
+                {
+                    activeGhost++;
+                }
 
-                for (int j = 0; j < activeUsers.Length; j++)
+                Person[] activeUsers = new Person[i + activeGhost];
+
+                for (int j = 0; j < i; j++)
                 {
                     activeUsers[j] = users[j];
+                }
+
+                if (activeGhost > 0)
+                {
+                    activeUsers[activeUsers.Length - 1] = ghostUser;
                 }
 
                 return activeUsers;
             }
 
             return new Person[0];
-        }
-
-        public int getNumUsers()
-        {
-            return activeUsers;
         }
 
         public Hand[] getHands()
@@ -457,19 +501,14 @@ namespace WindowsGame1
             tutorialButton.ButtonTriggered += new System.EventHandler<EventArgs>(this.tutorialButtonTriggered);
         }
 
-        private void updateUserColor(int userId) // Why doesn't this just take a Person object?
+        private void updateUserColor(Person person)
         {
-            if (mostRecentFrame != null && (userId < users.Length) && mostRecentColorMap.Length != 0)
+            if (mostRecentFrame != null && mostRecentColorMap.Length != 0)
             {
-                TorsoData curr = new TorsoData(users[userId].torsoTop, users[userId].torsoBottom);
+                TorsoData curr = new TorsoData(person.torsoTop, person.torsoBottom);
                 if ((curr.torsoTop.X == 0 && curr.torsoTop.Y == 0 && curr.torsoTop.Z == 0) == false)
                 {
-                    users[userId].color = ColorUtility.ComputeUserColor(users[userId], mostRecentFrame.Width, mostRecentColorMap, kinectSensor);
-
-                    if (ColorUtility.colorycontrasty != 0)
-                    {
-                        int x = 0;
-                    }
+                    person.color = ColorUtility.ComputeUserColor(person, mostRecentFrame.Width, mostRecentColorMap, kinectSensor);
                 }
             }
         }

@@ -224,18 +224,6 @@ namespace WindowsGame1
             basicEffect = new BasicEffect(GraphicsDevice);
 
             kinectController.addButton(tutorialButton);
-
-            //verticies = new VertexPositionColor[3];
-
-            //verticies[0].Position = new Vector3(-.5f, -.5f, 0f);
-            //verticies[0].Color = Color.Red;
-            //verticies[1].Position = new Vector3(0f, .5f, 0f);
-            //verticies[1].Color = Color.Green;
-            //verticies[2].Position = new Vector3(.5f, -.5f, 0f);
-            //verticies[2].Color = Color.Yellow;
-
-            //vertexBuffer = new VertexBuffer(GraphicsDevice, typeof(VertexPositionColor), 3, BufferUsage.WriteOnly);
-            //vertexBuffer.SetData<VertexPositionColor>(verticies);
         }
 
         protected override void UnloadContent()
@@ -273,7 +261,7 @@ namespace WindowsGame1
 
             for (int i = 0; i < userHands.Count(); i++)
             {
-                if (userHands[i] != null && userHands[i].IsActive() == true)
+                if (userHands[i] != null)
                 {
                     passiveAgents.Add(userHands[i]);
                 }
@@ -287,6 +275,7 @@ namespace WindowsGame1
             if (tutorialModeOn == true)
             {
                 currentTutorial.update(gameTime.ElapsedGameTime.TotalMilliseconds);
+                kinectController.updateGhost(currentTutorial.getGhostSkeleton());
             }
 
             base.Update(gameTime);
@@ -323,7 +312,6 @@ namespace WindowsGame1
 
             spriteBatch.Begin();
 
-            //DrawHandCircles();
             DrawHandSprite();
             DrawText();
 
@@ -341,22 +329,9 @@ namespace WindowsGame1
         {
             StringBuilder builder = new StringBuilder();
 
-            //Hand[] hands = kinectController.getHands();
-
-            //for (int i = 0; i < hands.Count(); i++)
-            //{
-            //    if (hands[i] != null && hands[i].IsActive() == true)
-            //    {
-            //        builder.Clear();
-            //        builder.Append("Hand at: (");
-            //        builder.Append(hands[i].getLocation().X * xScale);
-            //        builder.Append(", ");
-            //        builder.Append(hands[i].getLocation().Y * yScale);
-            //        builder.Append(")");
-            //        spriteBatch.DrawString(font1, builder.ToString(), new Vector2(10, 10 + (20 * i)), Color.Black);
-            //    }
-            //}
-
+            Hand[] hands = kinectController.getHands();
+            Person[] persons = kinectController.getUsers();                    
+                    
             if (tutorialModeOn)
             {
                 //String tutorialText = "This is a Tutorial for What the Flock?";
@@ -437,6 +412,11 @@ namespace WindowsGame1
                 // Draw the sprites over the users hand locations
                 spriteBatch.Draw(rightHandSprite, vR, null, Color.White, 0f, Vector2.Zero, users[i].rightHand.getRadius() / HAND_SCALE_DIVISOR, SpriteEffects.None, 0f);
                 spriteBatch.Draw(leftHandSprite, vL, null, Color.White, 0f, Vector2.Zero, users[i].leftHand.getRadius() / HAND_SCALE_DIVISOR, SpriteEffects.None, 0f);
+            }
+
+            if (tutorialModeOn == true)
+            {
+                // draw tutorials hands
             }
 
         }

@@ -12,7 +12,15 @@ namespace WindowsGame1
 
         public DespawnTutorial(DaVinciExhibit stateMachine) : base(stateMachine)
         {
-            //ghostPerson = new Person(null);
+            ghostSkeleton = new SkeletonWrapper();
+
+            ghostSkeleton.setHeadJoint(-.2, .4, 2.0);
+            ghostSkeleton.setRightShoulderJoint(-.08, .105, 2.0);
+            ghostSkeleton.setLeftShoulderJoint(-.350, .095, 2.0);
+            ghostSkeleton.setRightFootJoint(-.005, -.905, 1.550);
+            ghostSkeleton.setLeftFootJoint(-.325, -.927, 1.550);
+            ghostSkeleton.setRightHandJoint(.15, .2, 2.0);
+            ghostSkeleton.setLeftHandJoint(0.0, -.2, 2.0);
         }
 
         public override void update(double delta)

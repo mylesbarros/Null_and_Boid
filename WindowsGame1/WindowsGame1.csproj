@@ -133,6 +133,7 @@
     <Compile Include="GuideTutorial.cs" />
     <Compile Include="HSLColor.cs" />
     <Compile Include="Button.cs" />
+    <Compile Include="SkeletonWrapper.cs" />
     <Compile Include="SpawnTutorial.cs" />
     <Compile Include="Tutorial.cs" />
     <Compile Include="ScissorGestureDetector.cs" />
