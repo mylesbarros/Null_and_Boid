@@ -1,5 +1,4 @@
 using Microsoft.Kinect;
-using DotNET = System.Windows;
 
 namespace WindowsGame1
 {
@@ -9,12 +8,14 @@ namespace WindowsGame1
 	public class TutorialAnimationCheckpoint
 	{
 		private long timestamp;
-		private DotNET.Point intendedLocation;
+		private SkeletonPoint intendedLocation;
 
-		public TutorialAnimationCheckpoint(long timestamp, float x, float y)
+		public TutorialAnimationCheckpoint(long timestamp, float x, float y, float z)
 		{
 			this.timestamp = timestamp;
-			intendedLocation = new DotNET.Point(x, y);
+			intendedLocation.X = x;
+            intendedLocation.Y = y;
+            intendedLocation.Z = z;
 		}
 
 		public long getTimeForPoint()
@@ -22,7 +23,7 @@ namespace WindowsGame1
 			return timestamp;
 		}
 
-		public DotNET.Point getPoint()
+		public SkeletonPoint getPoint()
 		{
 			return intendedLocation;
 		}

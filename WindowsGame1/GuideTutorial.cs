@@ -33,6 +33,7 @@ namespace WindowsGame1
                 stop();
                 nextState();
             }
+
         }
 
         public override String getDrawText()

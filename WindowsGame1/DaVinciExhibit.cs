@@ -53,6 +53,8 @@ namespace WindowsGame1
         VertexPositionColor[] verticies;
         VertexBuffer vertexBuffer;
 
+        TutorialAnimation testAnimation;
+
         Matrix world = Matrix.CreateTranslation(0, 0, 0);
         Matrix view = Matrix.CreateLookAt(new Vector3(0, 0, 1), Vector3.Zero, Vector3.Up);
         //Matrix projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45), (float)gameWidth / (float)gameHeight, .01f, 100f);
@@ -214,6 +216,8 @@ namespace WindowsGame1
 
             tutorialButtonSprite = Content.Load<Texture2D>("tutorialImage");
 
+            testAnimation = FileLoader.loadTutorial("Content1/testAnimation.txt");
+
             DotNET.Point tutorialButtonLocation = new DotNET.Point(gameWidth - tutorialButtonSprite.Width, 0 + tutorialButtonSprite.Height);
             tutorialButton = new Button(tutorialButtonSprite, tutorialButtonLocation, 2400);
 
@@ -235,6 +239,8 @@ namespace WindowsGame1
         public void setTutorialState(Tutorial tutorial)
         {
             this.currentTutorial = tutorial;
+            this.currentTutorial.setAnimation(testAnimation);
+            // TODO set the animation for the tutorial
         }
 
         public void button_ButtonTriggered(object sender, System.EventArgs e)

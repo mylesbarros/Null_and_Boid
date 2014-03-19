@@ -9,7 +9,7 @@ namespace WindowsGame1
     class SpawnTutorial : Tutorial
     {
         private static String drawText = "YOU ARE IN THE SPAWN TUTORIAL";
-        private const int SWITCH_TIME = 4000;
+        private const int SWITCH_TIME = 6000;
 
         public SpawnTutorial(DaVinciExhibit stateMachine) : base(stateMachine)
         {
@@ -26,7 +26,8 @@ namespace WindowsGame1
 
         public override void update(double delta)
         {
-            //go through the animation
+            SkeletonPoint skelly = animationSys.getLocationForTimestamp(stopwatch.ElapsedMilliseconds);
+            ghostSkeleton.setRightHandJoint(skelly.X, skelly.Y, skelly.Z);
 
             if (stopwatch.ElapsedMilliseconds > SWITCH_TIME)
             {

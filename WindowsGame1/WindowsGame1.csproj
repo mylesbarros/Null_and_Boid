@@ -130,6 +130,7 @@
   <ItemGroup>
     <Compile Include="Agent.cs" />
     <Compile Include="DespawnTutorial.cs" />
+    <Compile Include="FileLoader.cs" />
     <Compile Include="GuideTutorial.cs" />
     <Compile Include="HSLColor.cs" />
     <Compile Include="Button.cs" />
@@ -149,6 +150,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="DaVinciExhibit.cs" />
+    <Compile Include="TutorialAnimation.cs" />
+    <Compile Include="TutorialAnimationCheckpoint.cs" />
     <Compile Include="WaveGestureDetector.cs" />
   </ItemGroup>
   <ItemGroup>

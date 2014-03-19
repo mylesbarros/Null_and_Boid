@@ -13,9 +13,12 @@ namespace WindowsGame1
         protected Stopwatch stopwatch;
         protected SkeletonWrapper ghostSkeleton;
 
+        protected TutorialAnimation animationSys;
+
         public Tutorial(DaVinciExhibit stateMachine)
         {
             this.stateMachine = stateMachine;
+
             stopwatch = new Stopwatch();
             start();
         }
@@ -43,6 +46,11 @@ namespace WindowsGame1
         public SkeletonWrapper getGhostSkeleton()
         {
             return ghostSkeleton;
+        }
+
+        public void setAnimation(TutorialAnimation animation)
+        {
+            this.animationSys = animation;
         }
     }
 }
