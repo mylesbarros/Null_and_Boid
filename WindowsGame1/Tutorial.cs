@@ -51,6 +51,7 @@ namespace WindowsGame1
         public void setAnimation(TutorialAnimation animation)
         {
             this.animationSys = animation;
+            animationSys.restartAnimation();
         }
     }
 }

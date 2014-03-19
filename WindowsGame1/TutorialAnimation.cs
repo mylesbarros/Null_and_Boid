@@ -13,13 +13,14 @@ namespace WindowsGame1
 		private TutorialAnimationCheckpoint lastCheckpointReached;
         private int index;
 
+        private bool animationFinished;
+
 		public TutorialAnimation(IEnumerable<TutorialAnimationCheckpoint> checkpoints)
 		{
             this.checkpoints = new List<TutorialAnimationCheckpoint>(checkpoints);
             this.checkpoints.TrimExcess();
 
-            lastCheckpointReached = this.checkpoints[0];
-            index = 1;
+            restartAnimation();
 		}
 		
 		/// <summary>
@@ -34,7 +35,6 @@ namespace WindowsGame1
             wrapIndex();
 
             TutorialAnimationCheckpoint nextPoint = checkpoints[index];
-            index += 1;
 
 			// If a sufficiently long period of time has passed since the last
 			// point was requested the nextPoint pulled from the queue may be
@@ -42,17 +42,19 @@ namespace WindowsGame1
 			// As such we will find the
 			// next checkpoint in the queue past the provided timestamp.
 			while (nextPoint != null &&
-				    nextPoint.getTimeForPoint() < timestamp && index < checkpoints.Count)
+				    nextPoint.getTimeForPoint() < timestamp && index < (checkpoints.Count - 1))
 			{
-				nextPoint = checkpoints[index];
                 index += 1;
+                nextPoint = checkpoints[index];
 			}
 
-            if (index == checkpoints.Count)
+            if ((index >= (checkpoints.Count - 1)) && (nextPoint.getTimeForPoint() < timestamp))
             {
                 wrapIndex();
 
                 nextPoint = checkpoints[index];
+
+                animationFinished = true;
             }
 
 			// If there are no further checkpoints passed the provided timestamp
@@ -85,7 +87,7 @@ namespace WindowsGame1
 			long timeDifference = nextPoint.getTimeForPoint()
 				- lastCheckpointReached.getTimeForPoint();
 			
-			long interpolationRatio = timestamp / timeDifference;
+			float interpolationRatio = (timestamp - lastCheckpointReached.getTimeForPoint()) / (float)timeDifference;
 			
 			// Compute a vector that will define the translation from the last
 			// generated checkpoint to the Point being requested
@@ -105,6 +107,18 @@ namespace WindowsGame1
 
 			return newPoint;
 		}
+
+        public bool isAnimationFinished()
+        {
+            return animationFinished;
+        }
+
+        public void restartAnimation()
+        {
+            animationFinished = false;
+            lastCheckpointReached = this.checkpoints[0];
+            index = 1;
+        }
 
         private void wrapIndex()
         {

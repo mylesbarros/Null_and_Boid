@@ -8,7 +8,7 @@ namespace WindowsGame1
 {
     class SpawnTutorial : Tutorial
     {
-        private static String drawText = "YOU ARE IN THE SPAWN TUTORIAL";
+        private static String drawText = "YOU ARE IN THE SPAWN TUTORIAL - Elapsed Time: ";
         private const int SWITCH_TIME = 6000;
 
         public SpawnTutorial(DaVinciExhibit stateMachine) : base(stateMachine)
@@ -29,7 +29,7 @@ namespace WindowsGame1
             SkeletonPoint skelly = animationSys.getLocationForTimestamp(stopwatch.ElapsedMilliseconds);
             ghostSkeleton.setRightHandJoint(skelly.X, skelly.Y, skelly.Z);
 
-            if (stopwatch.ElapsedMilliseconds > SWITCH_TIME)
+            if (animationSys.isAnimationFinished())
             {
                 stop();
                 nextState();
@@ -40,7 +40,7 @@ namespace WindowsGame1
         {
             StringBuilder builder = new StringBuilder(drawText);
             builder.Append(": ");
-            builder.Append(SWITCH_TIME - stopwatch.ElapsedMilliseconds);
+            builder.Append(stopwatch.ElapsedMilliseconds);
             return builder.ToString();
         }
 
