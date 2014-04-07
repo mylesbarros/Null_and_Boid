@@ -10,13 +10,50 @@ namespace WindowsGame1
 {
     static class FlockingEngine
     {
-        private static float ALIGN_WEIGHT = 1.5f;
+        public static float HIGH_COHESION = 2f;
+        public static float LOW_COHESION = 1f;
+        public static float HIGH_SEPARATION = 2f;
+        public static float LOW_SEPARATION = 1f;
+        public static float HIGH_ALIGNMENT = 2f;
+        public static float LOW_ALIGNMENT = 1f;
+
+        private static float ALIGN_WEIGHT = 1f;
         private static float COHESE_WEIGHT = 1f;
         private static float SEPARATE_WEIGHT = 1f;
 
-        private static double MAX_TURN = Math.PI / 16;
+        private static double MAX_TURN = Math.PI / 32;
 
-        private static double OVERLAP_THRESHOLD = Math.Pow(10, 2);
+        private static double OVERLAP_THRESHOLD = Math.Pow(Agent.DEFAULT_AGENT_RADIUS, 2);
+
+        public static float getCohesion()
+        {
+            return COHESE_WEIGHT;
+        }
+
+        public static void setCohesion(float newCohesion)
+        {
+            COHESE_WEIGHT = newCohesion;
+        }
+
+        public static float getSeparation()
+        {
+            return SEPARATE_WEIGHT;
+        }
+
+        public static void setSeparatoin(float newSeparation)
+        {
+            SEPARATE_WEIGHT = newSeparation;
+        }
+
+        public static float getAlignment()
+        {
+            return ALIGN_WEIGHT;
+        }
+
+        public static void setAlignment(float newAlignment)
+        {
+            ALIGN_WEIGHT = newAlignment;
+        }
 
         public static void Flock(List<Agent> activeAgents, List<Flockable> passiveAgents)
         {
@@ -69,6 +106,12 @@ namespace WindowsGame1
                     agent.setHeading(Vector2.Normalize(newHead));
                 }
 
+                //correctOverlap(agent, neighbors);       
+            }
+        }
+
+        public static void correctOverlap(Agent agent, List<Flockable> neighbors)
+        {
                 double distSq;
                 double overlap;
                 double newX, newY;
@@ -77,17 +120,22 @@ namespace WindowsGame1
                 {
                     if (other is Agent == true)
                     {
-                    distSq = (Math.Pow((agent.getLocation().X - other.getLocation().X), 2) + Math.Pow((agent.getLocation().Y - other.getLocation().Y), 2));
-                    overlap = OVERLAP_THRESHOLD - distSq;
-                    if (agent.Equals(other) == false && overlap >= 0)
-                    {
-                        newX = agent.getLocation().X + (((other.getLocation().X - agent.getLocation().X) / Math.Sqrt(distSq)) * overlap);
-                        newY = agent.getLocation().Y + (((other.getLocation().Y - agent.getLocation().Y) / Math.Sqrt(distSq)) * overlap);
-                        agent.setLocation(new DotNET.Point(newX, newY));
-                    }
+                        Vector2 toOther = new Vector2((float)(other.getLocation().X - agent.getLocation().X), (float)(other.getLocation().Y - agent.getLocation().Y));
+                        distSq = toOther.LengthSquared();
+                        //distSq = (Math.Pow((agent.getLocation().X - other.getLocation().X), 2) + Math.Pow((agent.getLocation().Y - other.getLocation().Y), 2));
+                        overlap = agent.getAgentRadiusSq() + other.getAgentRadiusSq() - distSq;
+                        if (agent.Equals(other) == false && overlap >= 0)
+                        {
+                            double scale = overlap / Math.Sqrt(distSq);
+                            Vector2 move = new Vector2((float)(toOther.X * scale), (float)(toOther.Y * scale));
+                            //newX = agent.getLocation().X + (((other.getLocation().X - agent.getLocation().X) / Math.Sqrt(distSq)) * overlap);
+                            //newY = agent.getLocation().Y + (((other.getLocation().Y - agent.getLocation().Y) / Math.Sqrt(distSq)) * overlap);
+                            newX = agent.getLocation().X + move.X;
+                            newY = agent.getLocation().Y + move.Y;
+                            agent.setLocation(new DotNET.Point(newX, newY));
+                        }
                     }
                 } // end foreach
-            }
         }
 
         public static List<Flockable> getNeigbors(Agent agent, List<Flockable> candidates)
@@ -101,12 +149,12 @@ namespace WindowsGame1
                 distSq = (Math.Pow((agent.getLocation().X - other.getLocation().X), 2) + Math.Pow((agent.getLocation().Y - other.getLocation().Y), 2));
                 if (other is Hand)
                 {
-                    if (distSq < other.getRadiusSq())
+                    if (distSq < other.getNeighborhoodRadiusSq())
                     {
                         neighbors.Add(other);
                     }
                 }
-                else if (distSq < other.getRadiusSq() && agent.Equals(other) == false)
+                else if (distSq < other.getNeighborhoodRadiusSq() && agent.Equals(other) == false)
                 {
                     neighbors.Add(other);
                 }

@@ -13,7 +13,8 @@ namespace WindowsGame1
         protected Stopwatch stopwatch;
         protected SkeletonWrapper ghostSkeleton;
 
-        protected TutorialAnimation animationSys;
+        protected TutorialAnimation rightHandAnimator;
+        protected TutorialAnimation leftHandAnimator;
 
         public Tutorial(DaVinciExhibit stateMachine)
         {
@@ -29,6 +30,9 @@ namespace WindowsGame1
 
         public void start()
         {
+            //this.rightHandAnimator.restartAnimation();
+            //this.leftHandAnimator.restartAnimation();
+
             stopwatch.Reset();
             stopwatch.Start();
         }
@@ -48,10 +52,16 @@ namespace WindowsGame1
             return ghostSkeleton;
         }
 
-        public void setAnimation(TutorialAnimation animation)
+        public void setRightAnimation(TutorialAnimation animation)
         {
-            this.animationSys = animation;
-            animationSys.restartAnimation();
+            this.rightHandAnimator = animation;
+            rightHandAnimator.restartAnimation();
+        }
+
+        public void setLeftAnimation(TutorialAnimation animation)
+        {
+            this.leftHandAnimator = animation;
+            leftHandAnimator.restartAnimation();
         }
     }
 }

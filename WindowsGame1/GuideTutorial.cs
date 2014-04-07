@@ -8,7 +8,7 @@ namespace WindowsGame1
 {
     class GuideTutorial : Tutorial
     {
-        private static String drawText = "YOU ARE IN THE GUIDE TUTORIAL";
+        private static String drawText = "TO GUIDE THE BOIDS MOVE YOUR HAND WITH THE SCREEN";
         private const int SWITCH_TIME = 5000;
 
         public GuideTutorial(DaVinciExhibit stateMachine) : base(stateMachine)
@@ -26,27 +26,30 @@ namespace WindowsGame1
 
         public override void update(double delta)
         {
-            //go through the animation
+            SkeletonPoint rightSkelly = rightHandAnimator.getLocationForTimestamp(stopwatch.ElapsedMilliseconds);
+            ghostSkeleton.setRightHandJoint(rightSkelly.X, rightSkelly.Y, rightSkelly.Z);
 
-            if (stopwatch.ElapsedMilliseconds > SWITCH_TIME)
+            SkeletonPoint leftSkelly = leftHandAnimator.getLocationForTimestamp(stopwatch.ElapsedMilliseconds);
+            ghostSkeleton.setLeftHandJoint(leftSkelly.X, leftSkelly.Y, leftSkelly.Z);
+
+            if (rightHandAnimator.isAnimationFinished() && leftHandAnimator.isAnimationFinished())
             {
                 stop();
                 nextState();
             }
-
         }
 
         public override String getDrawText()
         {
             StringBuilder builder = new StringBuilder(drawText);
-            builder.Append(": ");
-            builder.Append(SWITCH_TIME - stopwatch.ElapsedMilliseconds);
+            //builder.Append(": ");
+            //builder.Append(stopwatch.ElapsedMilliseconds);
             return builder.ToString();
         }
 
         public override void nextState()
         {
-            stateMachine.setTutorialState(new SpawnTutorial(stateMachine));
+            stateMachine.setTutorialState(new SpawnTutorial(stateMachine), DaVinciExhibit.TutorialType.SPAWN);
         }
     }
 }

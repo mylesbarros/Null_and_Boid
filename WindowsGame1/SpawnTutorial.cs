@@ -8,7 +8,7 @@ namespace WindowsGame1
 {
     class SpawnTutorial : Tutorial
     {
-        private static String drawText = "YOU ARE IN THE SPAWN TUTORIAL - Elapsed Time: ";
+        private static String drawText = "TO ADD BIRDS PRESS YOUR HAND TOWARDS THE SCREEN";
         private const int SWITCH_TIME = 6000;
 
         public SpawnTutorial(DaVinciExhibit stateMachine) : base(stateMachine)
@@ -26,10 +26,13 @@ namespace WindowsGame1
 
         public override void update(double delta)
         {
-            SkeletonPoint skelly = animationSys.getLocationForTimestamp(stopwatch.ElapsedMilliseconds);
-            ghostSkeleton.setRightHandJoint(skelly.X, skelly.Y, skelly.Z);
+            SkeletonPoint rightSkelly = rightHandAnimator.getLocationForTimestamp(stopwatch.ElapsedMilliseconds);
+            ghostSkeleton.setRightHandJoint(rightSkelly.X, rightSkelly.Y, rightSkelly.Z);
 
-            if (animationSys.isAnimationFinished())
+            SkeletonPoint leftSkelly = leftHandAnimator.getLocationForTimestamp(stopwatch.ElapsedMilliseconds);
+            ghostSkeleton.setLeftHandJoint(leftSkelly.X, leftSkelly.Y, leftSkelly.Z);
+
+            if (rightHandAnimator.isAnimationFinished() && leftHandAnimator.isAnimationFinished())
             {
                 stop();
                 nextState();
@@ -39,14 +42,14 @@ namespace WindowsGame1
         public override string getDrawText()
         {
             StringBuilder builder = new StringBuilder(drawText);
-            builder.Append(": ");
-            builder.Append(stopwatch.ElapsedMilliseconds);
+            //builder.Append(": ");
+            //builder.Append(stopwatch.ElapsedMilliseconds);
             return builder.ToString();
         }
 
         public override void nextState()
         {
-            stateMachine.setTutorialState(new DespawnTutorial(stateMachine));
+            stateMachine.setTutorialState(new DespawnTutorial(stateMachine), DaVinciExhibit.TutorialType.DESPAWN);
         }
     }
 }

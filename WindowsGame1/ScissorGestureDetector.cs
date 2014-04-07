@@ -159,8 +159,8 @@ namespace WindowsGame1
             // If the user's hands are converging...
             if (gestureTracker.currState == ScissorGestureState.Converging)
             {
-                double leftHandRadius = leftHand.getRadius();
-                double rightHandRadius = rightHand.getRadius();
+                double leftHandRadius = leftHand.getAgentRadius();
+                double rightHandRadius = rightHand.getAgentRadius();
 
                 double minContactRadius = (leftHandRadius + rightHandRadius) * CONTACT_SCALE;
 

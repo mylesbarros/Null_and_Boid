@@ -18,9 +18,13 @@ namespace WindowsGame1
         public Color color;
         private const int FLOCKING_WEIGHT = 1;
 
-        private const int DEFAULT_RADIUS = 25;
-        private int radius;
-        private double radiusSq;
+        public const int DEFAULT_AGENT_RADIUS = 10;
+        public const int DEFAULT_NEIGHBORHOOD_RADIUS = 25;
+        private int agentRadius;
+        private double agentRadiusSq;
+
+        private int neighborhoodRadius;
+        private double neighborhoonRadiusSq;
 
         private bool isDead;
 
@@ -52,8 +56,11 @@ namespace WindowsGame1
             isDead = false;
             heightVariable = HEIGHT_START;
 
-            this.radius = radius;
-            radiusSq = Math.Pow(radius, 2);
+            this.agentRadius = radius;
+            this.agentRadiusSq = Math.Pow(radius, 2);
+
+            this.neighborhoodRadius = DEFAULT_NEIGHBORHOOD_RADIUS;
+            this.neighborhoonRadiusSq = Math.Pow(this.neighborhoodRadius, 2);
         }
 
         /// <summary>
@@ -79,8 +86,11 @@ namespace WindowsGame1
 
             isDead = false;
 
-            radius = DEFAULT_RADIUS;
-            radiusSq = Math.Pow(radius, 2);
+            this.agentRadius = DEFAULT_AGENT_RADIUS;
+            this.agentRadiusSq = Math.Pow(this.agentRadius, 2);
+
+            this.neighborhoodRadius = DEFAULT_NEIGHBORHOOD_RADIUS;
+            this.neighborhoonRadiusSq = Math.Pow(this.neighborhoodRadius, 2);
         }
 
         /// <summary>
@@ -102,8 +112,11 @@ namespace WindowsGame1
             isDead = false;
             heightVariable = HEIGHT_START;
 
-            radius = DEFAULT_RADIUS;
-            radiusSq = Math.Pow(radius, 2);
+            this.agentRadius = DEFAULT_AGENT_RADIUS;
+            this.agentRadiusSq = Math.Pow(this.agentRadius, 2);
+
+            this.neighborhoodRadius = DEFAULT_NEIGHBORHOOD_RADIUS;
+            this.neighborhoonRadiusSq = Math.Pow(this.neighborhoodRadius, 2);
         }
 
         /// <summary>
@@ -125,8 +138,11 @@ namespace WindowsGame1
 
             isDead = false;
 
-            radius = DEFAULT_RADIUS;
-            radiusSq = Math.Pow(radius, 2);
+            this.agentRadius = DEFAULT_AGENT_RADIUS;
+            this.agentRadiusSq = Math.Pow(this.agentRadius, 2);
+
+            this.neighborhoodRadius = DEFAULT_NEIGHBORHOOD_RADIUS;
+            this.neighborhoonRadiusSq = Math.Pow(this.neighborhoodRadius, 2);
         }
 
         /// <summary>
@@ -265,18 +281,28 @@ namespace WindowsGame1
         /// Get an agents collision radius
         /// </summary>
         /// <returns>the radius</returns>
-        public int getRadius()
+        public int getAgentRadius()
         {
-            return radius;
+            return agentRadius;
         }
 
         /// <summary>
         /// Get an agents collision radius squared
         /// </summary>
         /// <returns>radius * radius</returns>
-        public double getRadiusSq()
+        public double getAgentRadiusSq()
         {
-            return radiusSq;
+            return agentRadiusSq;
+        }
+
+        public int getNeighborhoodRadius()
+        {
+            return neighborhoodRadius;
+        }
+
+        public double getNeighborhoodRadiusSq()
+        {
+            return neighborhoonRadiusSq;
         }
     }
 }

@@ -13,7 +13,7 @@ namespace WindowsGame1
         private bool isGhost;
 
         // add isGhost!
-        public Person(SkeletonWrapper skeletonData, bool isGhost)
+        public Person(SkeletonWrapper skeletonData, Color c, bool isGhost)
         {
             hashCode = HASH_CODE;
             HASH_CODE += 1;
@@ -38,12 +38,21 @@ namespace WindowsGame1
             leftHandPosition = leftHand.Position;
             rightHandPosition = rightHand.Position; 
 
-            this.color = new Color();
+            this.color = c;
 
             canSpawnBoids = true;
 
             this.rightHand = new Hand(rightHand);
             this.leftHand = new Hand(leftHand);
+        }
+
+        public bool isAGhost()
+        {
+            return isGhost;
+        }
+
+        public Person(SkeletonWrapper skeletonData,  bool isGhost) : this(skeletonData, new Color(), isGhost)
+        {
         }
 
         public void ResetTimeBetweenSpawn()

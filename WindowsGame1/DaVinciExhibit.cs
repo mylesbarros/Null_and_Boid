@@ -40,9 +40,15 @@ namespace WindowsGame1
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        Texture2D rightHandTutorialSprite;
+        Texture2D leftHandTutorialSprite;
+
         Texture2D rightHandSprite;
         Texture2D leftHandSprite;
+
         Texture2D tutorialButtonSprite;
+        Texture2D buttonLowSprite;
+        Texture2D buttonHighSprite;
 
         SpriteFont font1;
 
@@ -53,7 +59,16 @@ namespace WindowsGame1
         VertexPositionColor[] verticies;
         VertexBuffer vertexBuffer;
 
-        TutorialAnimation testAnimation;
+        TutorialAnimation guideAnimationRight;
+        TutorialAnimation guideAnimationLeft;
+
+        TutorialAnimation spawnAnimationRight;
+        TutorialAnimation spawnAnimationLeft;
+
+        TutorialAnimation despawnAnimationRight;
+        TutorialAnimation despawnAnimationLeft;
+
+        public enum TutorialType {GUIDE, SPAWN, DESPAWN};
 
         Matrix world = Matrix.CreateTranslation(0, 0, 0);
         Matrix view = Matrix.CreateLookAt(new Vector3(0, 0, 1), Vector3.Zero, Vector3.Up);
@@ -61,6 +76,9 @@ namespace WindowsGame1
         Matrix projection = Matrix.CreateOrthographicOffCenter(0, (float)gameWidth, (float)gameHeight, 0, 1f, 1000f);
 
         Button tutorialButton;
+        Button cohesionButton;
+        Button separationButton;
+        Button alignmentButton;
 
         Texture2D kinectRGBVideo; 
 
@@ -94,9 +112,9 @@ namespace WindowsGame1
 
             stopwatch = new Stopwatch();
 
-            flock = new Flock(50, dataWidth, dataHeight, 50);
+            flock = new Flock(75, dataWidth, dataHeight, 75);
             tutorialModeOn = true;
-            currentTutorial = new GuideTutorial(this);
+            
 
             DiscoverKinectSensor();
 
@@ -214,20 +232,61 @@ namespace WindowsGame1
             rightHandSprite = Content.Load<Texture2D>("rHand");
             leftHandSprite = Content.Load<Texture2D>("lHand");
 
-            tutorialButtonSprite = Content.Load<Texture2D>("tutorialImage");
+            leftHandTutorialSprite = Content.Load<Texture2D>("lTutorialHand");
+            rightHandTutorialSprite = Content.Load<Texture2D>("rTutorialHand");
 
-            testAnimation = FileLoader.loadTutorial("Content1/testAnimation.txt");
+            tutorialButtonSprite = Content.Load<Texture2D>("tutorialButton");
+            buttonLowSprite = Content.Load<Texture2D>("buttonLow");
+            buttonHighSprite = Content.Load<Texture2D>("buttonHigh");
 
-            DotNET.Point tutorialButtonLocation = new DotNET.Point(gameWidth - tutorialButtonSprite.Width, 0 + tutorialButtonSprite.Height);
-            tutorialButton = new Button(tutorialButtonSprite, tutorialButtonLocation, 2400);
+            guideAnimationRight = FileLoader.loadTutorial("tutorialFiles/guideRightHand.txt");
+            guideAnimationLeft = FileLoader.loadTutorial("tutorialFiles/guideLeftHand.txt");
 
-            tutorialButton.ButtonTriggered += button_ButtonTriggered;
+            this.setTutorialState(new GuideTutorial(this), TutorialType.GUIDE);
+
+            spawnAnimationRight = FileLoader.loadTutorial("tutorialFiles/spawnRightHand.txt");
+            spawnAnimationLeft = FileLoader.loadTutorial("tutorialFiles/spawnLeftHand.txt");
+
+            despawnAnimationRight = FileLoader.loadTutorial("tutorialFiles/despawnRightHand.txt");
+            despawnAnimationLeft = FileLoader.loadTutorial("tutorialFiles/despawnLeftHand.txt");
+
+            instatiniateButtons();
 
             kinectRGBVideo = new Texture2D(GraphicsDevice, 640, 480);
 
             basicEffect = new BasicEffect(GraphicsDevice);
 
             kinectController.addButton(tutorialButton);
+            kinectController.addButton(cohesionButton);
+            kinectController.addButton(alignmentButton);
+            kinectController.addButton(separationButton);
+        }
+
+        private void instatiniateButtons()
+        {
+            List<Texture2D> tutorialButtonTextures = new List<Texture2D>();
+            List<Texture2D> otherButtonTextures = new List<Texture2D>();
+
+            tutorialButtonTextures.Add(tutorialButtonSprite);
+
+            otherButtonTextures.Add(buttonLowSprite);
+            otherButtonTextures.Add(buttonHighSprite);
+
+            DotNET.Point tutorialButtonLocation = new DotNET.Point(gameWidth - tutorialButtonSprite.Width, 0 + tutorialButtonSprite.Height);
+            tutorialButton = new Button(tutorialButtonTextures, tutorialButtonLocation, 1150);
+            tutorialButton.ButtonTriggered += button_TutorialButtonTriggered;
+
+            DotNET.Point cohesionButtonLocation = new DotNET.Point(tutorialButtonLocation.X, (2 * (10 + tutorialButtonSprite.Height)));
+            cohesionButton = new Button(otherButtonTextures, cohesionButtonLocation, 100);
+            cohesionButton.ButtonTriggered += button_CohesionButtonTriggered;
+
+            DotNET.Point separationButtonLocation = new DotNET.Point(gameWidth - tutorialButtonSprite.Width, (3 * (10 + tutorialButtonSprite.Height)));
+            separationButton = new Button(otherButtonTextures, separationButtonLocation, 100);
+            separationButton.ButtonTriggered += button_SeparationButtonTriggered;
+
+            DotNET.Point alignmentButtonLocation = new DotNET.Point(gameWidth - tutorialButtonSprite.Width, (4 * (10 + tutorialButtonSprite.Height)));
+            alignmentButton = new Button(otherButtonTextures, alignmentButtonLocation, 100);
+            alignmentButton.ButtonTriggered += button_AlignmentButtonTriggered;           
         }
 
         protected override void UnloadContent()
@@ -236,14 +295,33 @@ namespace WindowsGame1
             kinectSensor.Dispose();
         }
 
-        public void setTutorialState(Tutorial tutorial)
+        public void setTutorialState(Tutorial tutorial, TutorialType type)
         {
             this.currentTutorial = tutorial;
-            this.currentTutorial.setAnimation(testAnimation);
-            // TODO set the animation for the tutorial
+
+            switch (type)
+            {
+                case (TutorialType.GUIDE):
+                    this.currentTutorial.setRightAnimation(guideAnimationRight);
+                    this.currentTutorial.setLeftAnimation(guideAnimationLeft);
+                    break;
+
+                case (TutorialType.SPAWN):
+                    this.currentTutorial.setRightAnimation(spawnAnimationRight);
+                    this.currentTutorial.setLeftAnimation(spawnAnimationLeft);
+                    break;
+
+                case (TutorialType.DESPAWN):
+                    this.currentTutorial.setRightAnimation(despawnAnimationRight);
+                    this.currentTutorial.setLeftAnimation(despawnAnimationLeft);
+                    break;
+
+                default :
+                    break;
+            }
         }
 
-        public void button_ButtonTriggered(object sender, System.EventArgs e)
+        public void button_TutorialButtonTriggered(object sender, System.EventArgs e)
         {
             if (tutorialModeOn == false)
             {
@@ -254,6 +332,43 @@ namespace WindowsGame1
             {
                 currentTutorial.stop();
                 tutorialModeOn = false;
+                kinectController.updateGhost(null);
+            }
+        }
+
+        public void button_CohesionButtonTriggered(object sender, System.EventArgs e)
+        {
+            if (FlockingEngine.getCohesion() == FlockingEngine.HIGH_COHESION)
+            {
+                FlockingEngine.setCohesion(FlockingEngine.LOW_COHESION);
+            }
+            else
+            {
+                FlockingEngine.setCohesion(FlockingEngine.HIGH_COHESION);
+            }
+        }
+
+        public void button_SeparationButtonTriggered(object sender, System.EventArgs e)
+        {
+            if (FlockingEngine.getSeparation() == FlockingEngine.HIGH_SEPARATION)
+            {
+                FlockingEngine.setSeparatoin(FlockingEngine.LOW_SEPARATION);
+            }
+            else
+            {
+                FlockingEngine.setSeparatoin(FlockingEngine.HIGH_SEPARATION);
+            }
+        }
+
+        public void button_AlignmentButtonTriggered(object sender, System.EventArgs e)
+        {
+            if (FlockingEngine.getAlignment() == FlockingEngine.HIGH_ALIGNMENT)
+            {
+                FlockingEngine.setAlignment(FlockingEngine.LOW_ALIGNMENT);
+            }
+            else
+            {
+                FlockingEngine.setAlignment(FlockingEngine.HIGH_ALIGNMENT);
             }
         }
 
@@ -276,6 +391,18 @@ namespace WindowsGame1
             if (tutorialButton != null)
             {
                 tutorialButton.Update();
+            }
+            if (cohesionButton != null)
+            {
+                cohesionButton.Update();
+            }
+            if (alignmentButton != null)
+            {
+                alignmentButton.Update();
+            }
+            if (separationButton != null)
+            {
+                separationButton.Update();
             }
 
             if (tutorialModeOn == true)
@@ -325,6 +452,18 @@ namespace WindowsGame1
             {
                 DrawButtonSprite(tutorialButton);
             }
+            if (cohesionButton != null)
+            {
+                DrawButtonSprite(cohesionButton);
+            }
+            if (alignmentButton != null)
+            {
+                DrawButtonSprite(alignmentButton);
+            }
+            if (separationButton != null)
+            {
+                DrawButtonSprite(separationButton);
+            }
 
             spriteBatch.End();
 
@@ -333,10 +472,7 @@ namespace WindowsGame1
 
         public void DrawText()
         {
-            StringBuilder builder = new StringBuilder();
-
-            Hand[] hands = kinectController.getHands();
-            Person[] persons = kinectController.getUsers();                    
+            StringBuilder builder = new StringBuilder();                 
                     
             if (tutorialModeOn)
             {
@@ -349,6 +485,15 @@ namespace WindowsGame1
                 spriteBatch.DrawString(font1, currentTutorial.getDrawText(), new Vector2(10, 10), Color.Black);
             }
 
+            builder.Clear();
+            builder.Append("COHESION: ");
+            builder.Append(FlockingEngine.getCohesion());
+            builder.Append(" -- SEPARATION: ");
+            builder.Append(FlockingEngine.getSeparation());
+            builder.Append(" -- ALIGNMENT: ");
+            builder.Append(FlockingEngine.getAlignment());
+
+            spriteBatch.DrawString(font1, builder.ToString(), new Vector2(10, gameHeight - font1.LineSpacing), Color.Black);
         }
 
         public void MakeTriangles()
@@ -404,9 +549,15 @@ namespace WindowsGame1
             Person[] users = kinectController.getUsers();
 
             // For each of the users...
+            Color color = Color.White;
+            if (tutorialModeOn)
+            {
+                color.A = 100;
+            }
             for (int i = 0; i < users.Length; i++)
             {
                 // collect the position of their hand locations
+
                 rightHandDepthPoint = users[i].getRightHandLocation();
                 leftHandDepthPoint = users[i].getLeftHandLocation();
 
@@ -416,8 +567,16 @@ namespace WindowsGame1
 
 
                 // Draw the sprites over the users hand locations
-                spriteBatch.Draw(rightHandSprite, vR, null, Color.White, 0f, Vector2.Zero, users[i].rightHand.getRadius() / HAND_SCALE_DIVISOR, SpriteEffects.None, 0f);
-                spriteBatch.Draw(leftHandSprite, vL, null, Color.White, 0f, Vector2.Zero, users[i].leftHand.getRadius() / HAND_SCALE_DIVISOR, SpriteEffects.None, 0f);
+                if (users[i].isAGhost())
+                {
+                    spriteBatch.Draw(rightHandTutorialSprite, vR, null, Color.White, 0f, Vector2.Zero, users[i].rightHand.getAgentRadius() / HAND_SCALE_DIVISOR, SpriteEffects.None, 0f);
+                    spriteBatch.Draw(leftHandTutorialSprite, vL, null, Color.White, 0f, Vector2.Zero, users[i].leftHand.getAgentRadius() / HAND_SCALE_DIVISOR, SpriteEffects.None, 0f);
+                }
+                else
+                {
+                    spriteBatch.Draw(rightHandSprite, vR, null, color, 0f, Vector2.Zero, users[i].rightHand.getAgentRadius() / HAND_SCALE_DIVISOR, SpriteEffects.None, 0f);
+                    spriteBatch.Draw(leftHandSprite, vL, null, color, 0f, Vector2.Zero, users[i].leftHand.getAgentRadius() / HAND_SCALE_DIVISOR, SpriteEffects.None, 0f);
+                }
             }
 
             if (tutorialModeOn == true)

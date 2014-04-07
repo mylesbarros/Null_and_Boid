@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DotNET = System.Windows;
+using System.Collections;
 
 namespace WindowsGame1
 {
@@ -27,50 +28,59 @@ namespace WindowsGame1
 
     public class Button
     {
-        private Texture2D sprite;
+        private List<Texture2D> textures;
         private DotNET.Point Location;
+        private int representation;
+        private int numTextures;
 
         private float radius;
         private float radiusSq;
 
-        private Person[] hands;
-
-        public static double[] distances;
+        private Person[] people;
 
         private Stopwatch stopwatch;
         private long minNecessaryInteractionTime;
+        private Boolean buttonHasBeenTriggered;
+        private Boolean timingInteraction;
 
         public event EventHandler<EventArgs> ButtonTriggered;
 
-        public Button(Texture2D visualRepresentation, DotNET.Point location, long minInteractionTime)
+        public Button(List<Texture2D> textures, DotNET.Point location, long minInteractionTime)
         {
-            sprite = visualRepresentation;
-            this.Location = location;
 
-            radius = ((sprite.Height / 2) + (sprite.Width / 2)) / 2;
+            this.textures = textures;
+            this.Location = location;
+            representation = 0;
+            this.numTextures = textures.Count;
+
+            radius = ((textures[0].Height / 2) + (textures[0].Width / 2)) / 2;
             radiusSq = radius * radius;
 
             minNecessaryInteractionTime = minInteractionTime;
             stopwatch = new Stopwatch();
 
-            hands = new Person[6];
+            people = new Person[6];
+
+            buttonHasBeenTriggered = false;
+
+            timingInteraction = false;
         }
 
-        public void setVisualRepresentation(Texture2D sprite)
+        public void setVisualRepresentation1(List<Texture2D> sprites)
         {
-            this.sprite = sprite;
+            this.textures = sprites;
         }
 
         public Texture2D getSprite()
         {
-            return sprite;
+            return textures[representation];
         }
 
         public void UpdateHands(Person[] newHands)
         {
             if (newHands != null)
             {
-                this.hands = newHands;
+                this.people = newHands;
             }
         }
 
@@ -79,28 +89,32 @@ namespace WindowsGame1
             return Location;
         }
 
-        private static Boolean timingInteraction = false;
         public void Update()
         {
-                if (hands != null)
+                if (people != null)
                 {
                     Hand hand1 = null;
                     Hand hand2 = null;
                     
                     Boolean handInteracting = false;
-                    distances = new double[hands.Length];
-                    for (int i = 0; i < hands.Length; i++) // for each hand...
+                    // Check each hand for a possible interaction with the button
+                    for (int i = 0; i < people.Length; i++)
                     {
+                        // If we have not already detected a hand in contact with the button...
                         if (handInteracting == false)
                         {
-                            if (hands[i] != null)
+                            if (people[i] != null)
                             {
-                                hand1 = hands[i].leftHand;
-                                hand2 = hands[i].rightHand;
+                                hand1 = people[i].leftHand;
+                                hand2 = people[i].rightHand;
                             }
                             
-                            handInteracting = handInRange(hand1, (2 * i));
-                            handInteracting = handInRange(hand2, (2 * i) + 1); 
+                            // Then determine if either of the hands of the current person are overlapping the button
+                            handInteracting = handInRange(hand1);
+                            if (handInteracting == false)
+                            {
+                                handInteracting = handInRange(hand2);
+                            }
                         }
                     }
                     
@@ -119,12 +133,15 @@ namespace WindowsGame1
                           if (stopwatch.ElapsedMilliseconds > minNecessaryInteractionTime)
                           {
                               // If there are observers/listners...
-                              if (ButtonTriggered != null)
+                              if (ButtonTriggered != null && buttonHasBeenTriggered == false)
                                  {
                                   // Tell them the great news! A tutorial has been requested!
                                   // We'll send them bland information as they only care *that* it happened; details are
                                   // extraneous
+                                  representation = (representation + 1) % numTextures;
                                   ButtonTriggered(null, new EventArgs());
+
+                                  buttonHasBeenTriggered = true;
                                  }
                               }
 
@@ -135,13 +152,15 @@ namespace WindowsGame1
                             timingInteraction = false;
                             stopwatch.Stop();
                             stopwatch.Reset();
+
+                            buttonHasBeenTriggered = false;
                         }
 
             }
         
         }
 
-        public Boolean handInRange(Hand hand, int i)
+        private Boolean handInRange(Hand hand)
         {
             DotNET.Point handLoc;
             double dist, x, y;
@@ -156,10 +175,10 @@ namespace WindowsGame1
                 DotNET.Point convertedHandLoc = new DotNET.Point(x, y);
 
                 // Compute the distance from the interaction button to a hand accessing it
-                dist = Math.Pow(Location.X - convertedHandLoc.X, 2) + Math.Pow(Location.Y - convertedHandLoc.Y, 2);
+                dist = Math.Pow(Location.X - convertedHandLoc.X, 2) + Math.Pow((Location.Y + radius) - radius - convertedHandLoc.Y, 2);
                 //distances[i] = dist;
                 // If a hand is touching the TutorialButton...
-                if (dist < (radiusSq + hand.getRadiusSq()))
+                if (dist < (radiusSq + hand.getAgentRadiusSq()))
                 {
                     return true;
                 }

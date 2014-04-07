@@ -23,7 +23,7 @@ namespace WindowsGame1
         private int radius;
         private double radiusSq;
 
-        private const int FLOCKING_WEIGHT = 120;
+        private const int FLOCKING_WEIGHT = 280;
         private const double HAND_DIST_THRESHOLD = 0.018f;
 
         private static KinectSensor sensor;
@@ -113,22 +113,30 @@ namespace WindowsGame1
             sensor = newSensor;
         }
 
-
-        public int getRadius()
-        {
-            return radius;
-        }
-
-        public double getRadiusSq()
-        {
-            return radiusSq;
-        }
-
         public void UpdateRadius(int radius)
         {
             this.radius = radius;
             radiusSq = Math.Pow(radius, 2);
         }
 
+        public int getAgentRadius()
+        {
+            return radius;
+        }
+
+        public double getAgentRadiusSq()
+        {
+            return radiusSq;
+        }
+
+        public int getNeighborhoodRadius()
+        {
+            return radius;
+        }
+
+        public double getNeighborhoodRadiusSq()
+        {
+            return radiusSq;
+        }
     }
 }

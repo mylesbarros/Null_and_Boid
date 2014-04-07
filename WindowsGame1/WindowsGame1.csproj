@@ -131,6 +131,7 @@
     <Compile Include="Agent.cs" />
     <Compile Include="DespawnTutorial.cs" />
     <Compile Include="FileLoader.cs" />
+    <Compile Include="FileWriter.cs" />
     <Compile Include="GuideTutorial.cs" />
     <Compile Include="HSLColor.cs" />
     <Compile Include="Button.cs" />

@@ -15,7 +15,9 @@ namespace WindowsGame1
         Vector2 getHeading();
         DotNET.Point getLocation();
         int getFlockingWeight();
-        int getRadius();
-        double getRadiusSq();
+        int getAgentRadius();
+        double getAgentRadiusSq();
+        int getNeighborhoodRadius();
+        double getNeighborhoodRadiusSq();
     }
 }

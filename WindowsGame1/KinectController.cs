@@ -7,6 +7,7 @@ using System.Diagnostics;
 using DotNET = System.Windows;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections;
 
 namespace WindowsGame1
 {
@@ -36,10 +37,16 @@ namespace WindowsGame1
 
         Button tutorialButton;
 
+        ArrayList buttonsCollection;
+
         private Person ghostUser;
+        private Color GHOST_USER_COLOR = Color.BlanchedAlmond;
 
         private const int MAX_NUM_USERS = 6;
 
+        private FileWriter rightWriter = new FileWriter("TutorialFiles/despawnRightHand.txt");
+        private FileWriter leftWriter = new FileWriter("TutorialFiles/despawnLeftHand.txt");
+        private Stopwatch timer = new Stopwatch();
 
         public KinectController(KinectSensor kinectSensor, Stopwatch stopwatch, Flock flock, Texture2D kinectRGBVideo, GraphicsDeviceManager graphics)
         {
@@ -49,7 +56,9 @@ namespace WindowsGame1
             this.kinectRGBVideo = kinectRGBVideo;
             this.graphics = graphics;
 
+            this.timer.Start();
             users = new Person[MAX_NUM_USERS];
+            buttonsCollection = new ArrayList(5);
 
             //waveGestureDetector = new WaveGestureDetector(kinectSensor);
             // Subscribe to the wave gesture detector as an observer.
@@ -88,7 +97,7 @@ namespace WindowsGame1
             double deletionX = (leftHandPos.X + rightHandPos.X) / 2;
             double deletionY = (leftHandPos.Y + leftHandPos.Y) / 2;
             DotNET.Point deletionZoneCenter = new DotNET.Point(deletionX, deletionY);
-            double deletionZoneRadius = ((killer.leftHand.getRadius() + killer.rightHand.getRadius()) / 2);
+            double deletionZoneRadius = ((killer.leftHand.getAgentRadius() + killer.rightHand.getAgentRadius()) / 2);
             deletionZoneRadius = deletionZoneRadius * eventArgs.getRadiusScale();
             double deletionZoneRadiusSq = Math.Pow(deletionZoneRadius, 2);
 
@@ -117,8 +126,8 @@ namespace WindowsGame1
             DepthImagePoint leftHandLocation = users[userId].leftHandLocation;
             DepthImagePoint rightHandLocation = users[userId].rightHandLocation;
 
-            int leftHandRadius = users[userId].leftHand.getRadius() + 1;
-            int rightHandRadius = users[userId].rightHand.getRadius() +1;
+            int leftHandRadius = users[userId].leftHand.getAgentRadius() + 1;
+            int rightHandRadius = users[userId].rightHand.getAgentRadius() +1;
             double leftHandRadiusSq = Math.Pow(leftHandRadius, 2);
             double rightHandRadiusSq = Math.Pow(rightHandRadius, 2);
             double leftDistanceSq;
@@ -249,7 +258,7 @@ namespace WindowsGame1
                 return false;
             }
 
-            //kinectSensor.ElevationAngle = 15;
+            kinectSensor.ElevationAngle = 17;
 
             //This API has returned an exception from an HRESULT: 0x8007000D
 
@@ -315,6 +324,12 @@ namespace WindowsGame1
 
                             users[i] = updatePerson(skeletonWrap, currPerson, false);
 
+                            long timestamp = stopwatch.ElapsedMilliseconds;
+                            SkeletonPoint right = users[i].rightHandPosition;
+                            SkeletonPoint left = users[i].leftHandPosition;
+                            //rightWriter.writeLine(timestamp, right.X, right.Y, right.Z);
+                            //leftWriter.writeLine(timestamp, left.X, left.Y, left.Z);
+
                             i++;
                         } // end if
                     } // end foreach
@@ -357,16 +372,32 @@ namespace WindowsGame1
             person.rightHandLocation = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(person.rightHandPosition, this.kinectSensor.DepthStream.Format);
             person.leftHandLocation = this.kinectSensor.CoordinateMapper.MapSkeletonPointToDepthPoint(person.leftHandPosition, this.kinectSensor.DepthStream.Format);
 
+            //fileWriter.writeLine(file, timestamp, x, y, z)
+
             person.setRightHandRadius(person.rightHandLocation.Depth / 60);
             person.setLeftHandRadius(person.leftHandLocation.Depth / 60);
 
-            if (tutorialButton != null)
+            Button b;
+            for (int x = 0; x < buttonsCollection.Count; x++)
             {
-                tutorialButton.UpdateHands(users);
+                b = (Button)buttonsCollection[x];
+
+                if (b != null)
+                {
+                    b.UpdateHands(users);
+                }
             }
 
+            //if (tutorialButton != null)
+            //{
+              //  tutorialButton.UpdateHands(users);
+            //}
+
             // Update user color.
-            updateUserColor(person);
+            if (isGhost == false)
+            {
+                updateUserColor(person);
+            }
 
             // Update the gesture detectors of the user's physical state.
             //waveGestureDetector.Update(playerSkeleton, i);
@@ -420,7 +451,7 @@ namespace WindowsGame1
 
             if (ghostUser == null)
             {
-                ghostUser = new Person(skel, true);
+                ghostUser = new Person(skel, GHOST_USER_COLOR, true);
             }
 
             updatePerson(skel, ghostUser, true);
@@ -497,8 +528,9 @@ namespace WindowsGame1
 
         public void addButton(Button newButton)
         {
-            tutorialButton = newButton;
-            tutorialButton.ButtonTriggered += new System.EventHandler<EventArgs>(this.tutorialButtonTriggered);
+            buttonsCollection.Add(newButton);
+
+            //tutorialButton = newButton;
         }
 
         private void updateUserColor(Person person)
