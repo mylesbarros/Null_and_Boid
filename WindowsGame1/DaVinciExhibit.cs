@@ -50,7 +50,8 @@ namespace WindowsGame1
         Texture2D buttonLowSprite;
         Texture2D buttonHighSprite;
 
-        SpriteFont font1;
+        SpriteFont tutorialFont;
+        SpriteFont labelFont;
 
         Boolean tutorialModeOn;
         Tutorial currentTutorial;
@@ -227,7 +228,8 @@ namespace WindowsGame1
 
             Content.RootDirectory = "Content1";
 
-            font1 = Content.Load<SpriteFont>("ArialFont");
+            tutorialFont = Content.Load<SpriteFont>("TutorialFont");
+            labelFont = Content.Load<SpriteFont>("LabelFont");
 
             rightHandSprite = Content.Load<Texture2D>("rHand");
             leftHandSprite = Content.Load<Texture2D>("lHand");
@@ -276,15 +278,15 @@ namespace WindowsGame1
             tutorialButton = new Button(tutorialButtonTextures, tutorialButtonLocation, 1150);
             tutorialButton.ButtonTriggered += button_TutorialButtonTriggered;
 
-            DotNET.Point cohesionButtonLocation = new DotNET.Point(tutorialButtonLocation.X, (2 * (10 + tutorialButtonSprite.Height)));
+            DotNET.Point cohesionButtonLocation = new DotNET.Point(tutorialButtonLocation.X, (2 * (tutorialFont.LineSpacing + tutorialButtonSprite.Height)));
             cohesionButton = new Button(otherButtonTextures, cohesionButtonLocation, 100);
             cohesionButton.ButtonTriggered += button_CohesionButtonTriggered;
 
-            DotNET.Point separationButtonLocation = new DotNET.Point(gameWidth - tutorialButtonSprite.Width, (3 * (10 + tutorialButtonSprite.Height)));
+            DotNET.Point separationButtonLocation = new DotNET.Point(gameWidth - tutorialButtonSprite.Width, (3 * (tutorialFont.LineSpacing + tutorialButtonSprite.Height)));
             separationButton = new Button(otherButtonTextures, separationButtonLocation, 100);
             separationButton.ButtonTriggered += button_SeparationButtonTriggered;
 
-            DotNET.Point alignmentButtonLocation = new DotNET.Point(gameWidth - tutorialButtonSprite.Width, (4 * (10 + tutorialButtonSprite.Height)));
+            DotNET.Point alignmentButtonLocation = new DotNET.Point(gameWidth - tutorialButtonSprite.Width, (4 * (tutorialFont.LineSpacing + tutorialButtonSprite.Height)));
             alignmentButton = new Button(otherButtonTextures, alignmentButtonLocation, 100);
             alignmentButton.ButtonTriggered += button_AlignmentButtonTriggered;           
         }
@@ -472,8 +474,8 @@ namespace WindowsGame1
 
         public void DrawText()
         {
-            StringBuilder builder = new StringBuilder();                 
-                    
+            StringBuilder builder = new StringBuilder();
+
             if (tutorialModeOn)
             {
                 //String tutorialText = "This is a Tutorial for What the Flock?";
@@ -482,18 +484,38 @@ namespace WindowsGame1
                 //spriteBatch.DrawString(font1, tutorialText, new Vector2(10, 10), Color.Black);
                 //spriteBatch.DrawString(font1, tutorialText2, new Vector2(10, 30), Color.Black);
 
-                spriteBatch.DrawString(font1, currentTutorial.getDrawText(), new Vector2(10, 10), Color.Black);
+                spriteBatch.DrawString(tutorialFont, currentTutorial.getDrawText(), new Vector2(10, 10), Color.Black);
+
+                builder.Append("Hover To\nEnd Tutorial");
+                spriteBatch.DrawString(labelFont, builder.ToString(), new Vector2((float)(tutorialButton.getLocation().X - (tutorialButton.getSprite().Width / 2)), (float)(tutorialButton.getLocation().Y) + (tutorialButton.getSprite().Height / 2)), Color.Black);
+            }
+
+            else
+            {
+                builder.Append("Hover To\nLearn More");
+                spriteBatch.DrawString(labelFont, builder.ToString(), new Vector2((float)(tutorialButton.getLocation().X - (tutorialButton.getSprite().Width / 2)), (float)(tutorialButton.getLocation().Y) + (tutorialButton.getSprite().Height / 2)), Color.Black);
             }
 
             builder.Clear();
-            builder.Append("COHESION: ");
-            builder.Append(FlockingEngine.getCohesion());
-            builder.Append(" -- SEPARATION: ");
-            builder.Append(FlockingEngine.getSeparation());
-            builder.Append(" -- ALIGNMENT: ");
-            builder.Append(FlockingEngine.getAlignment());
+            builder.Append("Cohesion");
+            spriteBatch.DrawString(labelFont, builder.ToString(), new Vector2((float)(cohesionButton.getLocation().X - (cohesionButton.getSprite().Width / 2)), (float)(cohesionButton.getLocation().Y) + (cohesionButton.getSprite().Height / 2)), Color.Black);
 
-            spriteBatch.DrawString(font1, builder.ToString(), new Vector2(10, gameHeight - font1.LineSpacing), Color.Black);
+            builder.Clear();
+            builder.Append("Separation");
+            spriteBatch.DrawString(labelFont, builder.ToString(), new Vector2((float)(separationButton.getLocation().X - (separationButton.getSprite().Width / 2)), (float)(separationButton.getLocation().Y) + (separationButton.getSprite().Height / 2)), Color.Black);
+
+            builder.Clear();
+            builder.Append("Alignment");
+            spriteBatch.DrawString(labelFont, builder.ToString(), new Vector2((float)(alignmentButton.getLocation().X - (alignmentButton.getSprite().Width / 2)), (float)(alignmentButton.getLocation().Y) + (alignmentButton.getSprite().Height / 2)), Color.Black);
+
+            //builder.Clear();
+            //builder.Append("COHESION: ");
+            //builder.Append(FlockingEngine.getCohesion());
+            //builder.Append(" -- SEPARATION: ");
+            //builder.Append(FlockingEngine.getSeparation());
+            //builder.Append(" -- ALIGNMENT: ");
+            //builder.Append(FlockingEngine.getAlignment());
+            //spriteBatch.DrawString(font1, builder.ToString(), new Vector2(10, gameHeight - font1.LineSpacing), Color.Black);
         }
 
         public void MakeTriangles()
