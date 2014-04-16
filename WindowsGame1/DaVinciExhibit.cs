@@ -1,6 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading;
+using Microsoft.Kinect;
+using Microsoft.Kinect.Toolkit.Interaction;
+using Microsoft.Speech.AudioFormat;
+using Microsoft.Speech.Recognition;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -9,18 +18,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using DotNET = System.Windows;
-
-using Microsoft.Kinect;
 using kinectToolkit = Microsoft.Kinect.Toolkit.Controls;
-using System.Collections.ObjectModel;
-using Microsoft.Kinect.Toolkit.Interaction;
-using System.Diagnostics;
-
-using Microsoft.Speech.AudioFormat;
-using Microsoft.Speech.Recognition;
-using System.IO;
-using System.Threading;
-using System.Text;
 
 namespace WindowsGame1
 {
@@ -39,6 +37,8 @@ namespace WindowsGame1
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+
+        Texture2D background;
 
         Texture2D rightHandTutorialSprite;
         Texture2D leftHandTutorialSprite;
@@ -113,8 +113,8 @@ namespace WindowsGame1
 
             stopwatch = new Stopwatch();
 
-            flock = new Flock(75, dataWidth, dataHeight, 75);
-            tutorialModeOn = true;
+            flock = new Flock(60, dataWidth, dataHeight, 75);
+            tutorialModeOn = false;
             
 
             DiscoverKinectSensor();
@@ -227,6 +227,8 @@ namespace WindowsGame1
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             Content.RootDirectory = "Content1";
+
+            background = Content.Load<Texture2D>("background");
 
             tutorialFont = Content.Load<SpriteFont>("TutorialFont");
             labelFont = Content.Load<SpriteFont>("LabelFont");
@@ -420,8 +422,22 @@ namespace WindowsGame1
         protected override void Draw(GameTime gameTime)
         {
             //DrawSprite(gameTime);
-
+            DrawBackground();
             DrawPrimitive(gameTime);
+        }
+
+        public void DrawBackground()
+        {
+            spriteBatch.Begin();
+
+            Rectangle screenRectangle = new Rectangle(0, 0, gameWidth, gameHeight);
+
+            if (background != null)
+            {
+                spriteBatch.Draw(background, screenRectangle, Color.White);
+            }
+            spriteBatch.End();
+
         }
 
         public void DrawPrimitive(GameTime gameTime)
@@ -439,17 +455,11 @@ namespace WindowsGame1
             rasterizerState.CullMode = CullMode.None;
             GraphicsDevice.RasterizerState = rasterizerState;
 
-            foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-                GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, flock.numAgents() + 2);
-            }
-
             spriteBatch.Begin();
 
             DrawHandSprite();
             DrawText();
-
+            
             if (tutorialButton != null)
             {
                 DrawButtonSprite(tutorialButton);
@@ -465,6 +475,12 @@ namespace WindowsGame1
             if (separationButton != null)
             {
                 DrawButtonSprite(separationButton);
+            }
+
+            foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, flock.numAgents() + 2);
             }
 
             spriteBatch.End();
@@ -532,12 +548,13 @@ namespace WindowsGame1
             float ty3 = 6;
             float theta;
 
-            verticies[0] = new VertexPositionColor(new Vector3(0f, 0f, 0f), Color.Gray);
-            verticies[1] = new VertexPositionColor(new Vector3(0f, (float) gameHeight, 0f), Color.White);
-            verticies[2] = new VertexPositionColor(new Vector3((float) gameWidth, 0f, 0f), Color.Gray);
-            verticies[3] = new VertexPositionColor(new Vector3(0f, (float)gameHeight, 0f), Color.White);
-            verticies[4] = new VertexPositionColor(new Vector3((float) gameWidth, 0f, 0f), Color.Gray);
-            verticies[5] = new VertexPositionColor(new Vector3((float)gameWidth, (float)gameHeight, 0f), Color.White);
+            //Draws gradient using primatives
+            //verticies[0] = new VertexPositionColor(new Vector3(0f, 0f, 0f), Color.Gray);
+            //verticies[1] = new VertexPositionColor(new Vector3(0f, (float) gameHeight, 0f), Color.White);
+            //verticies[2] = new VertexPositionColor(new Vector3((float) gameWidth, 0f, 0f), Color.Gray);
+            //verticies[3] = new VertexPositionColor(new Vector3(0f, (float)gameHeight, 0f), Color.White);
+            //verticies[4] = new VertexPositionColor(new Vector3((float) gameWidth, 0f, 0f), Color.Gray);
+            //verticies[5] = new VertexPositionColor(new Vector3((float)gameWidth, (float)gameHeight, 0f), Color.White);
 
             foreach (Agent agent in flock.GetAgents())
             {

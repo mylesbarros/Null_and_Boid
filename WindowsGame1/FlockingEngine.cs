@@ -64,6 +64,8 @@ namespace WindowsGame1
 
             List<Flockable> neighborCandidates = new List<Flockable>(activeAgents);
 
+            List<Hand> hands = getHandsFromList(passiveAgents);
+
             for (int i = 0; i < passiveAgents.Count(); i++)
             {
                 neighborCandidates.Add(passiveAgents[i]);
@@ -80,6 +82,18 @@ namespace WindowsGame1
                 pull = Vector2.Add(pull, Vector2.Multiply(align, ALIGN_WEIGHT));
                 pull = Vector2.Add(pull, Vector2.Multiply(cohese, COHESE_WEIGHT));
                 pull = Vector2.Add(pull, Vector2.Multiply(separate, SEPARATE_WEIGHT));
+
+                Hand closestHand = findClosestHand(agent, hands);
+
+                Vector2 targetHand;
+                Vector2 targetVector;
+                if (closestHand != null)
+                {
+                    targetHand = new Vector2((float) closestHand.getLocation().X, (float) closestHand.getLocation().Y);
+                    targetVector = Seek(agent, targetHand);
+
+                    pull = Vector2.Add(pull, Vector2.Multiply(targetVector, closestHand.getFlockingWeight()));
+                }
 
                 newHead = Vector2.Add(agent.getHeading(), pull);
 
@@ -149,10 +163,7 @@ namespace WindowsGame1
                 distSq = (Math.Pow((agent.getLocation().X - other.getLocation().X), 2) + Math.Pow((agent.getLocation().Y - other.getLocation().Y), 2));
                 if (other is Hand)
                 {
-                    if (distSq < other.getNeighborhoodRadiusSq())
-                    {
-                        neighbors.Add(other);
-                    }
+                    // nevermind
                 }
                 else if (distSq < other.getNeighborhoodRadiusSq() && agent.Equals(other) == false)
                 {
@@ -276,6 +287,36 @@ namespace WindowsGame1
             }
 
             return new Vector2();
+        }
+
+        public static List<Hand> getHandsFromList(List<Flockable> theList)
+        {
+            List<Hand> toReturn = new List<Hand>();
+            foreach (Flockable agent in theList)
+            {
+                if (agent is Hand)
+                {
+                    toReturn.Add((Hand)agent);
+                }
+            }
+            return toReturn;
+        }
+
+        public static Hand findClosestHand(Flockable agent, List<Hand> candidatesForHanddom)
+        {
+            double distSq = Double.MaxValue;
+            Hand closest = null;
+            foreach (Hand hand in candidatesForHanddom)
+            {
+                double tmp = Vector2.DistanceSquared(new Vector2((float)agent.getLocation().X, (float)agent.getLocation().Y), new Vector2((float)hand.getLocation().X, (float)hand.getLocation().Y));
+                if (tmp < distSq)
+                {
+                    closest = hand;
+                    distSq = tmp;
+                }
+            }
+
+            return closest;
         }
 
         public static Vector2 Seek(Agent agent, Vector2 goal)

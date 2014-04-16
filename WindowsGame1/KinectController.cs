@@ -258,7 +258,7 @@ namespace WindowsGame1
                 return false;
             }
 
-            kinectSensor.ElevationAngle = 17;
+            //kinectSensor.ElevationAngle = 17;
 
             //This API has returned an exception from an HRESULT: 0x8007000D
 
