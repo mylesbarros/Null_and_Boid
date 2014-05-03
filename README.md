@@ -1,4 +1,5 @@
 Known Bugs and Issues:
+
 	– When users exit the view of the Kinect too rapidly their hands remain behind, free-floating and stuck to where the Kinect lost sight of the user. Stepping back into frame does not correct the issue.
 
 	– Color correction is too sensitive and often causes colors to become washed out or excessively bright.
